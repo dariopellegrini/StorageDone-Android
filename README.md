@@ -59,7 +59,7 @@ try {
 Other methods allow filtering and deletion.
 
 ### Primary key
-A model can implement `PrimaryKey` protocol, in order to have an attribute set as database primary key
+A model can implement `PrimaryKey` interface in order to have an attribute set as database primary key
 ```kotlin
 data class Teacher(val id: String,
                    val name: String?,
