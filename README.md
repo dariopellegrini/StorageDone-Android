@@ -86,7 +86,7 @@ try {
 ```
 
 ### Coroutines
-Every operation has its suspending version. Each can be used through suspendable estension
+Every operation has its suspending version. Each can be used through suspendable extension
 ```kotlin
 ...
 
