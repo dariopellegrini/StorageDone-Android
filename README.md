@@ -2,7 +2,7 @@
 Kotlin library to make easy using local document-oriented database in Android apps.
 
 ### Disclaimer
-This library is in development, therefore should not be used in a production context for the moment. Thank you.
+This library is in development, therefore should not be used in a production context at the moment. Thank you.
 
 ## Installation
 
