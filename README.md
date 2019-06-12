@@ -101,7 +101,7 @@ database.suspending.delete(map("id" to "id2"))
 ```
 
 ### Operators
-Database objects can use different custom operators, which wrap try-catch logic and give a more compact way to access database
+Database objects can use different functions, which wrap try-catch logic and give a more compact way to access database
 ```kotlin
 // Insert or update
 database += teachers
