@@ -4,7 +4,7 @@ import android.util.Log
 
 inline operator fun <reified T>StorageDoneDatabase.plusAssign(elements: List<T>) {
     try {
-        this.insert(elements)
+        this.insertOrUpdate(elements)
     } catch (e: Exception) {
         Log.e("StorageDone", e.localizedMessage)
     }
