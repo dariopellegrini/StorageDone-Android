@@ -35,7 +35,7 @@ data class Teacher(val id: String,
                    val cv: String?)
 ```
 
-Then create a `Database` object and save an instance of a Codable model in it
+Then create a `StorageDoneDatabase` object and save an instance of a Codable model in it
 ```kotlin
 val database = StorageDoneDatabase(context, "teachers")
 val teacher = Teacher("id1", "Sarah", "Jones", 29, "https://my.cv.com/sarah_jones")
