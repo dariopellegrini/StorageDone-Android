@@ -15,7 +15,7 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
     val type = "StorageDoneType"
     val gson = Gson()
 
-    inline fun <reified T>insert(element: T) {
+    inline fun <reified T>insertOrUpdate(element: T) {
         val classType = T::class.java
         val map = gson.toJSONMap(element).toMutableMap()
         map[type] = classType.simpleName
@@ -35,6 +35,20 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
         }.setData(map)
 
         database.save(mutableDoc)
+    }
+
+    inline fun <reified T>insertOrUpdate(elements: List<T>) {
+        elements.forEach {
+            insertOrUpdate(it)
+        }
+    }
+
+    inline fun <reified T>insert(element: T) {
+        val classType = T::class.java
+        val map = gson.toJSONMap(element).toMutableMap()
+        map[type] = classType.simpleName
+
+        database.save(MutableDocument().setData(map))
     }
 
     inline fun <reified T>insert(elements: List<T>) {

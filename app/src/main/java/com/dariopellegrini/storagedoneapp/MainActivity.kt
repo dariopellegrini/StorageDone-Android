@@ -15,7 +15,21 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val database = StorageDoneDatabase(this)
+        val teacher = Teacher("id1", "Sarah", "Jones", null, "https://my.cv.com/sarah_jones")
+        val database = StorageDoneDatabase(this, "teachers")
+
+        try {
+            database.insertOrUpdate(listOf(teacher))
+        } catch( e: Exception) {
+            Log.e("StorageDone", e.localizedMessage)
+        }
+
+        try {
+            val teachers = database.get<Teacher>()
+            print(teachers)
+        } catch( e: Exception) {
+            Log.e("StorageDone", e.localizedMessage)
+        }
 
         CoroutineScope(Dispatchers.Main).launch {
             try {
@@ -54,4 +68,14 @@ data class Pet(val id: String, val name: String, val age: Int, val home: Home): 
 }
 
 data class Home(val id: String, val name: String)
+
+data class Teacher(val id: String,
+                   val name: String?,
+                   val surname: String?,
+                   val age: Int?,
+                   val cv: String?): PrimaryKey {
+    override fun primaryKey(): String {
+        return "id"
+    }
+}
 
