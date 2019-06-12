@@ -19,7 +19,7 @@ Then add as dependency to your app/build.gradle
 ``` groovy
 dependencies {
     ...
-    implementation 'com.github.dariopellegrini:StorageDone-Android:v0.1'
+    implementation 'com.github.dariopellegrini:StorageDone-Android:v0.2'
 }
 ```
 
@@ -42,7 +42,7 @@ val teacher = Teacher("id1", "Sarah", "Jones", 29, "https://my.cv.com/sarah_jone
 
 try {
     database.insert(teacher)
-} catch( e: Exception) {
+} catch(e: Exception) {
     Log.e("StorageDone", e.localizedMessage)
 }
 ```
@@ -51,7 +51,7 @@ Reading database content will retrieve an array of the decleared model
 ```kotlin
 try {
   val teachers = database.get<Teacher>()
-} catch( e: Exception) {
+} catch(e: Exception) {
   Log.e("StorageDone", e.localizedMessage)
 }
 ```
