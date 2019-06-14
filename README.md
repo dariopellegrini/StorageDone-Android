@@ -111,6 +111,9 @@ val teachers: List<Teacher> = database.all()
 
 // Filter
 val filteredTeachers: List<Teacher> = database filter mapOf("id" to "id2")
+
+// Delete if model implements PrimaryKey protocol
+database -= teachers
 ```
 
 ## Author
