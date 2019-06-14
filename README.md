@@ -88,8 +88,6 @@ try {
 ### Coroutines
 Every operation has its suspending version. Each can be used through suspendable extension
 ```kotlin
-...
-
 database.suspending.insertOrUpdate(teachers)
 
 database.suspending.insert(teachers)
