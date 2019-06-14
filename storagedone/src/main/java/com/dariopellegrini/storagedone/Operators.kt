@@ -32,3 +32,10 @@ inline fun <reified T>StorageDoneDatabase.all(): List<T> {
         emptyList()
     }
 }
+inline operator fun <reified T: PrimaryKey>StorageDoneDatabase.minusAssign(elements: List<T>) {
+    try {
+        this.delete(elements)
+    } catch (e: Exception) {
+        Log.e("StorageDone", e.localizedMessage)
+    }
+}

@@ -26,7 +26,7 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
                 val field = classType.getDeclaredField(primaryLabel)
                 field.isAccessible = true
                 val elementId = field.get(element)
-                MutableDocument("$elementId")
+                MutableDocument("$elementId-${classType.simpleName}")
             } catch (e: Exception) {
                 MutableDocument()
             }
@@ -136,5 +136,21 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
                 database.delete(doc)
             }
         }
+    }
+
+    inline fun <reified T: PrimaryKey>delete(element: T) {
+        val classType = T::class.java
+        val primaryLabel = element.primaryKey()
+        val field = classType.getDeclaredField(primaryLabel)
+        field.isAccessible = true
+        val elementId = field.get(element)
+        val document = database.getDocument("$elementId-${classType.simpleName}")
+        if (document.getString(type) == classType.simpleName) {
+            database.delete(document)
+        }
+    }
+
+    inline fun <reified T: PrimaryKey>delete(elements: List<T>) {
+        elements.forEach { delete(it) }
     }
 }
