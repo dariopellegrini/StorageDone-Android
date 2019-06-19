@@ -50,7 +50,7 @@ try {
 Reading database content will retrieve an array of the decleared model
 ```kotlin
 try {
-  val teachers = database.get<Teacher>()
+  val teachers = database.get<List<Teacher>>()
 } catch(e: Exception) {
   Log.e("StorageDone", e.localizedMessage)
 }
