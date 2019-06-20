@@ -12,5 +12,5 @@ inline fun <reified T> Gson.fromJson(jsonString: String): T {
 @Throws(Exception::class)
 fun <T>Gson.toJSONMap(o: T): Map<String, Any> {
     val jsonString = this.toJson(o)
-    return Gson().fromJson(jsonString)
+    return this.fromJson(jsonString)
 }

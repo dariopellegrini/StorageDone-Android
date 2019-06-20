@@ -6,6 +6,8 @@ import com.couchbase.lite.*
 import com.couchbase.lite.SelectResult
 import com.couchbase.lite.QueryBuilder
 import com.couchbase.lite.MutableDocument
+import java.util.*
+
 
 open class StorageDoneDatabase(val context: Context, val name: String = "StorageDone") {
 
