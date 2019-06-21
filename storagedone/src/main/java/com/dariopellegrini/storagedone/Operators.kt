@@ -1,6 +1,7 @@
 package com.dariopellegrini.storagedone
 
 import android.util.Log
+import com.couchbase.lite.Expression
 
 inline operator fun <reified T>StorageDoneDatabase.plusAssign(elements: List<T>) {
     try {
@@ -19,6 +20,14 @@ inline infix fun <reified T>StorageDoneDatabase.insertInto(list: MutableList<T>)
 inline infix fun <reified T>StorageDoneDatabase.filter(filter: Map<String, Any>): List<T> {
     return try {
         this.get(filter)
+    } catch (e: Exception) {
+        Log.e("StorageDone", e.localizedMessage)
+        emptyList()
+    }
+}
+inline infix fun <reified T>StorageDoneDatabase.filter(expression: Expression): List<T> {
+    return try {
+        this.get(expression)
     } catch (e: Exception) {
         Log.e("StorageDone", e.localizedMessage)
         emptyList()

@@ -6,6 +6,8 @@ import com.couchbase.lite.*
 import com.couchbase.lite.SelectResult
 import com.couchbase.lite.QueryBuilder
 import com.couchbase.lite.MutableDocument
+import com.google.gson.GsonBuilder
+import java.text.SimpleDateFormat
 import java.util.*
 
 
@@ -15,7 +17,9 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
     var database = Database(name, config)
 
     val type = "StorageDoneType"
-    val gson = Gson()
+    val gson = GsonBuilder()
+        .registerTypeAdapter(Date::class.java, ser)
+        .registerTypeAdapter(Date::class.java, deser).create()
 
     inline fun <reified T>insertOrUpdate(element: T) {
         val classType = T::class.java
@@ -93,6 +97,29 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
         val rs = query.execute()
         rs.map {
             result ->
+            val map = result.toMap()[name] as? Map<*, *>
+            if (map != null) {
+                val mutableMap = map.toMutableMap()
+                mutableMap.remove(type)
+                val json = gson.toJson(mutableMap)
+                val element = gson.fromJson<T>(json)
+                list.add(element)
+            }
+        }
+        return list
+    }
+
+    inline fun <reified T>get(expression: Expression): List<T> {
+        val classType = T::class.java
+        val startingExpression = Expression.property(type).equalTo(Expression.string(classType.simpleName))
+        val query = QueryBuilder.select(SelectResult.all())
+            .from(DataSource.database(database))
+            .where(startingExpression.and(expression))
+
+        val list = mutableListOf<T>()
+        val rs = query.execute()
+        rs.map {
+                result ->
             val map = result.toMap()[name] as? Map<*, *>
             if (map != null) {
                 val mutableMap = map.toMutableMap()
