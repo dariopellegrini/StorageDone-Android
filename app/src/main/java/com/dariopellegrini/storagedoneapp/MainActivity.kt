@@ -5,6 +5,9 @@ import android.os.Bundle
 import android.util.Log
 import com.dariopellegrini.storagedone.*
 import com.dariopellegrini.storagedone.query.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
@@ -36,7 +39,6 @@ class MainActivity : AppCompatActivity() {
         database += pets
 
         try {
-
             database.delete<Pet>(and(
                 "id" equal "id1",
                 "id" equal "id2"

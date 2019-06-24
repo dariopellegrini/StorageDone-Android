@@ -1,5 +1,6 @@
 package com.dariopellegrini.storagedone
 
+import com.couchbase.lite.Expression
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -46,5 +47,10 @@ suspend inline fun <reified T: PrimaryKey>Wrapper<StorageDoneDatabase>.delete(el
 suspend inline fun <reified T: PrimaryKey>Wrapper<StorageDoneDatabase>.delete(elements: List<T>) {
     withContext(Dispatchers.IO) {
         this@delete.base.delete(elements)
+    }
+}
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.delete(expression: Expression) {
+    withContext(Dispatchers.IO) {
+        this@delete.base.delete<T>(expression)
     }
 }
