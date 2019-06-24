@@ -76,8 +76,7 @@ Primary keys come in combination with insert or update methods
 ```kotlin
 val teachers = listOf(Teacher(id: "id1", name: "Sarah", surname: "Jones", age: 29, cv: "https://my.cv.com/sarah_jones"),
                 Teacher(id: "id2", name: "Silvia", surname: "Jackson", age: 29, cv: "https://my.cv.com/silvia_jackson"),
-                Teacher(id: "id3", name: "John", surname: "Jacobs", age: 30, cv: "https://my.cv.com/john_jackobs"))
-                
+                Teacher(id: "id3", name: "John", surname: "Jacobs", age: 30, cv: "https://my.cv.com/john_jackobs"))      
 try {
         this.insertOrUpdate(teachers)
     } catch (e: Exception) {
@@ -112,6 +111,54 @@ val filteredTeachers: List<Teacher> = database filter mapOf("id" to "id2")
 
 // Delete if model implements PrimaryKey protocol
 database -= teachers
+```
+
+### Operators
+Database objects can use different custom operators, which wrap try-catch logic and give a more compact way to access database
+```kotlin
+
+// Equal
+"id" equal "id1"
+
+// Comparison (Numeric only)
+"age" greaterThan 20
+"age" greaterThanOrEqual 20
+"age" lessThan 20
+"age" lessThanOrEqual 20
+"age" between (10 to 20)
+
+// Is null
+"age".isNull
+
+// Is not null
+"age".isNotNull
+
+// Value inside array
+"id" inside listOf("id1", "id2", "id3")
+
+// Array contains value
+"array" contains "A1"
+
+// Like
+"name" like "A%"
+
+// Regex
+"city" regex "\\bEng.*e\\b"
+
+// Dates comparisons
+"dateCreated" greaterThan Date()
+"dateCreated" greaterOrEqualThan Date()
+"dateCreated" lessThan Date()
+"dateCreated" lessOrEqualThan Date()
+"dateCreated" betweenDates (Date() to Date())
+
+// And
+and(expression1, expression2, expression3)
+
+// Or
+or(expression1, expression2, expression3)
+
+database.get(expression)
 ```
 
 ## Author
