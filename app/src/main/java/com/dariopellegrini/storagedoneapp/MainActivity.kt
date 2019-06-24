@@ -39,11 +39,6 @@ class MainActivity : AppCompatActivity() {
         database += pets
 
         try {
-            database.delete<Pet>(and(
-                "id" equal "id1",
-                "id" equal "id2"
-            ))
-
             val databasePets: List<Pet> = database.all()
             Log.i("Pets", "$databasePets")
         } catch (e: Exception) {

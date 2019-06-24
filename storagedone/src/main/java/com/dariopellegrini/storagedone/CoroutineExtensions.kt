@@ -29,6 +29,11 @@ suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.get(filter: Map<Strin
         return@withContext this@get.base.get<T>(filter)
     }
 }
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.get(expression: Expression): List<T> {
+    return withContext(Dispatchers.IO) {
+        return@withContext this@get.base.get<T>(expression)
+    }
+}
 suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.delete() {
     withContext(Dispatchers.IO) {
         this@delete.base.delete<T>()

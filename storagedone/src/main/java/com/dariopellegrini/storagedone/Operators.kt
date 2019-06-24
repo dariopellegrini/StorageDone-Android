@@ -49,11 +49,10 @@ inline operator fun <reified T: PrimaryKey>StorageDoneDatabase.minusAssign(eleme
     }
 }
 
-inline infix fun <reified T>StorageDoneDatabase.removeWithExpression(expression: Expression): Class<T> {
+inline infix fun <reified T>StorageDoneDatabase.remove(expression: Expression) {
     try {
         this.delete<T>(expression)
     } catch (e: Exception) {
         Log.e("StorageDone", e.localizedMessage)
     }
-    return T::class.java
 }
