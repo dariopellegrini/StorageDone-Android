@@ -182,4 +182,21 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
     inline fun <reified T: PrimaryKey>delete(elements: List<T>) {
         elements.forEach { delete(it) }
     }
+
+    inline fun <reified T>delete(expression: Expression) {
+        val classType = T::class.java
+        val startingExpression = Expression.property(type).equalTo(Expression.string(classType.simpleName))
+        val query = QueryBuilder.select(SelectResult.expression(Meta.id))
+            .from(DataSource.database(database))
+            .where(startingExpression.and(expression))
+
+        query.execute().map {
+                result ->
+            if (result.contains("id")) {
+                val id = result.getString("id")
+                val doc = database.getDocument(id)
+                database.delete(doc)
+            }
+        }
+    }
 }

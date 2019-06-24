@@ -36,17 +36,13 @@ class MainActivity : AppCompatActivity() {
         database += pets
 
         try {
-            val databasePets: List<Pet> = database.get(
-                    or(
-                        and(
-                            "id" equal "id1",
-                            "age" equal 10
-                        ),
-                        "age" greaterThanOrEqual 11,
-                        "home" equal Home("idHome21", "Home2", Address("Street3", "City3")),
-                        "date" betweenDates (date2019 to date2021)
-                )
-            )
+
+            database.delete<Pet>(and(
+                "id" equal "id1",
+                "id" equal "id2"
+            ))
+
+            val databasePets: List<Pet> = database.all()
             Log.i("Pets", "$databasePets")
         } catch (e: Exception) {
             print(e)
