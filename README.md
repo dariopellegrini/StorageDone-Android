@@ -110,8 +110,9 @@ val filteredTeachers: List<Teacher> = database filter mapOf("id" to "id2")
 database -= teachers
 ```
 
-### Operators
-Database objects can use different custom operators, which wrap try-catch logic and give a more compact way to access database
+### Queries
+Get and delete commands can use queries. Queries can be build in different ways, using custom operator
+
 ```kotlin
 
 // Equal
