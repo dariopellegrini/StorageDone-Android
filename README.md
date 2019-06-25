@@ -111,7 +111,7 @@ database -= teachers
 ```
 
 ### Queries
-Get and delete commands can use queries. Queries can be build in different ways, using custom operators
+Get and delete commands can use queries. Queries can be built in different ways, using custom operators
 
 ```kotlin
 
