@@ -1,9 +1,6 @@
 # StorageDone-Android
 Kotlin library to make easy using local document-oriented database in Android apps.
 
-### Disclaimer
-This library is in development, therefore should not be used in a production context at the moment. Thank you.
-
 ## Installation
 
 Edit your build.gradle file
@@ -113,8 +110,9 @@ val filteredTeachers: List<Teacher> = database filter mapOf("id" to "id2")
 database -= teachers
 ```
 
-### Operators
-Database objects can use different custom operators, which wrap try-catch logic and give a more compact way to access database
+### Queries
+Get and delete commands can use queries. Queries can be built in different ways, using custom operators
+
 ```kotlin
 
 // Equal
