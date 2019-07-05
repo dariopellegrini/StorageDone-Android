@@ -84,7 +84,7 @@ infix fun String.regex(value: String): Expression {
 val String.isNull: Expression
     get() = Expression.property(this).isNullOrMissing
 
-val String.notNull: Expression
+val String.isNotNull: Expression
     get() = Expression.property(this).notNullOrMissing()
 
 infix fun String.between(pair: Pair<Number, Number>): Expression {

@@ -7,6 +7,7 @@ import com.dariopellegrini.storagedone.*
 import com.dariopellegrini.storagedone.query.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.lang.Exception
 import java.text.SimpleDateFormat
@@ -36,10 +37,49 @@ class MainActivity : AppCompatActivity() {
             Pet("id2", "Pet 2", 11, Home("idHome2", "Home2", Address("Street2", "City2")), null, listOf("4", "5", "6"), date2015),
             Pet("id3", "Pet 3", 12, Home("idHome2", "Home2", Address("Street3", "City3")), false, listOf("7", "8", "9"), date2021))
 
-        database += pets
+        val liveQuery = database.live<Pet> {
+            petsList ->
+            Log.i("LiveQuery", "$petsList")
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            database.insertOrUpdate(Pet("id1", "Engineer", 10, Home("idHome1", "Home1", Address("Street1", "City1")), true, listOf("1", "2", "3"), date2011))
+            delay(3000)
+            database.insertOrUpdate(Pet("id1", "Engineer1", 10, Home("idHome1", "Home1", Address("Street1", "City1")), true, listOf("1", "2", "3"), date2011))
+            delay(3000)
+            database.insertOrUpdate(Pet("id1", "Engineer2", 10, Home("idHome1", "Home1", Address("Street1", "City1")), true, listOf("1", "2", "3"), date2011))
+            delay(3000)
+            database.insertOrUpdate(Pet("id1", "Engineer3", 10, Home("idHome1", "Home1", Address("Street1", "City1")), true, listOf("1", "2", "3"), date2011))
+        }
 
         try {
             val databasePets: List<Pet> = database.all()
+
+            "id" equal "id1"
+
+            "age" greaterThan 20
+            "age" greaterThanOrEqual 20
+            "age" lessThan 20
+            "age" lessThanOrEqual 20
+            "age" between (10 to 20)
+
+            "age".isNull
+
+            "age".isNotNull
+
+            "id" inside listOf("id1", "id2", "id3")
+            "array" contains "A1"
+
+            "name" like "A%"
+
+            "city" regex "\\bEng.*e\\b"
+
+            "dateCreated" greaterThan Date()
+            "dateCreated" greaterOrEqualThan Date()
+            "dateCreated" lessThan Date()
+            "dateCreated" lessOrEqualThan Date()
+            "dateCreated" betweenDates (Date() to Date())
+
             Log.i("Pets", "$databasePets")
         } catch (e: Exception) {
             print(e)

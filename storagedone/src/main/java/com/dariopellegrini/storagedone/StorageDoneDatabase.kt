@@ -1,6 +1,7 @@
 package com.dariopellegrini.storagedone
 
 import android.content.Context
+import android.util.Log
 import com.google.gson.Gson
 import com.couchbase.lite.*
 import com.couchbase.lite.SelectResult
@@ -9,6 +10,9 @@ import com.couchbase.lite.MutableDocument
 import com.google.gson.GsonBuilder
 import java.text.SimpleDateFormat
 import java.util.*
+import com.dariopellegrini.storagedone.live.LiveQuery
+
+
 
 
 open class StorageDoneDatabase(val context: Context, val name: String = "StorageDone") {
@@ -198,5 +202,36 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
                 database.delete(doc)
             }
         }
+    }
+
+    // Live
+    inline fun <reified T>live(crossinline closure: (List<T>) -> Unit): LiveQuery {
+        val classType = T::class.java
+        val query = QueryBuilder.select(SelectResult.all())
+            .from(DataSource.database(database))
+            .where(Expression.property(type).equalTo(Expression.string(classType.simpleName)))
+
+        val token = query.addChangeListener { change ->
+            Log.i("LiveQuery", "Change")
+            val list = mutableListOf<T>()
+            change.results.map {
+                result ->
+                val map = result.toMap()[name] as? Map<*, *>
+                if (map != null) {
+                    val mutableMap = map.toMutableMap()
+                    mutableMap.remove(type)
+                    val json = gson.toJson(mutableMap)
+                    val element = gson.fromJson<T>(json)
+                    list.add(element)
+                }
+            }
+            closure(list)
+        }
+        query.execute()
+        return LiveQuery(token)
+    }
+
+    fun cancel(liveQuery: LiveQuery) {
+        database.removeChangeListener(liveQuery.token)
     }
 }
