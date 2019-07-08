@@ -159,6 +159,23 @@ or(expression1, expression2, expression3)
 database.get(expression)
 ```
 
+## Live queries
+Using live queries it's possible to observe database changes.
+```kotlin
+
+// All elements
+val liveQuery = database.live<Teacher> {
+    teachers ->
+        Log.i("LiveQuery", "$teachers")
+}
+
+// Elements with query
+val liveQuery = database.live<Teacher>("id" equal "id1", "name") {
+    -> teachers
+        Log.i("LiveQuery", "$teachers")
+}
+```
+
 ## Author
 
 Dario Pellegrini, pellegrini.dario.1303@gmail.com
