@@ -170,7 +170,7 @@ val liveQuery = database.live<Teacher> {
 }
 
 // Elements with query
-val liveQuery = database.live<Teacher>("id" equal "id1", "name") {
+val liveQuery = database.live<Teacher>("id" equal "id1") {
     -> teachers
         Log.i("LiveQuery", "$teachers")
 }
