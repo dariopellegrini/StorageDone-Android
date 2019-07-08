@@ -37,19 +37,13 @@ class MainActivity : AppCompatActivity() {
             Pet("id2", "Pet 2", 11, Home("idHome2", "Home2", Address("Street2", "City2")), null, listOf("4", "5", "6"), date2015),
             Pet("id3", "Pet 3", 12, Home("idHome2", "Home2", Address("Street3", "City3")), false, listOf("7", "8", "9"), date2021))
 
-        val liveQuery = database.live<Pet> {
+        val liveQuery = database.live<Pet>(and("id" equal "id1", "name" equal "Engineer")) {
             petsList ->
             Log.i("LiveQuery", "$petsList")
         }
 
         CoroutineScope(Dispatchers.IO).launch {
-            database.insertOrUpdate(Pet("id1", "Engineer", 10, Home("idHome1", "Home1", Address("Street1", "City1")), true, listOf("1", "2", "3"), date2011))
-            delay(3000)
-            database.insertOrUpdate(Pet("id1", "Engineer1", 10, Home("idHome1", "Home1", Address("Street1", "City1")), true, listOf("1", "2", "3"), date2011))
-            delay(3000)
-            database.insertOrUpdate(Pet("id1", "Engineer2", 10, Home("idHome1", "Home1", Address("Street1", "City1")), true, listOf("1", "2", "3"), date2011))
-            delay(3000)
-            database.insertOrUpdate(Pet("id1", "Engineer3", 10, Home("idHome1", "Home1", Address("Street1", "City1")), true, listOf("1", "2", "3"), date2011))
+            database.insertOrUpdate(pets)
         }
 
         try {
@@ -84,6 +78,9 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             print(e)
         }
+
+        database.cancel(liveQuery)
+        database.insertOrUpdate(Pet("id1", "Engineer", 10, Home("idHome1", "Home1", Address("Street1", "City1")), true, listOf("1", "2", "3"), date2011))
     }
 }
 

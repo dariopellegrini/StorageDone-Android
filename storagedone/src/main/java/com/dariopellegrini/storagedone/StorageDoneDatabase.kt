@@ -231,6 +231,33 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
         return LiveQuery(token)
     }
 
+    inline fun <reified T>live(expression: Expression, crossinline closure: (List<T>) -> Unit): LiveQuery {
+        val classType = T::class.java
+        val startingExpression = Expression.property(type).equalTo(Expression.string(classType.simpleName))
+        val query = QueryBuilder.select(SelectResult.all())
+            .from(DataSource.database(database))
+            .where(startingExpression.and(expression))
+
+        val token = query.addChangeListener { change ->
+            Log.i("LiveQuery", "Change")
+            val list = mutableListOf<T>()
+            change.results.map {
+                    result ->
+                val map = result.toMap()[name] as? Map<*, *>
+                if (map != null) {
+                    val mutableMap = map.toMutableMap()
+                    mutableMap.remove(type)
+                    val json = gson.toJson(mutableMap)
+                    val element = gson.fromJson<T>(json)
+                    list.add(element)
+                }
+            }
+            closure(list)
+        }
+        query.execute()
+        return LiveQuery(token)
+    }
+
     fun cancel(liveQuery: LiveQuery) {
         database.removeChangeListener(liveQuery.token)
     }
