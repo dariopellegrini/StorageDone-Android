@@ -11,51 +11,61 @@ val StorageDoneDatabase.suspending: Wrapper<StorageDoneDatabase>
 
 suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.insert(element: T) {
     withContext(Dispatchers.IO) {
-        this@insert.base.insert(element)
+        base.insert(element)
     }
 }
 suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.insert(elements: List<T>) {
     withContext(Dispatchers.Main) {
-        this@insert.base.insert(elements)
+        base.insert(elements)
+    }
+}
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.insertOrUpdate(element: T) {
+    withContext(Dispatchers.IO) {
+        base.insertOrUpdate(element)
+    }
+}
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.insertOrUpdate(elements: List<T>) {
+    withContext(Dispatchers.Main) {
+        base.insertOrUpdate(elements)
     }
 }
 suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.get(): List<T> {
     return withContext(Dispatchers.IO) {
-        return@withContext this@get.base.get<T>()
+        base.get<T>()
     }
 }
 suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.get(filter: Map<String, Any>): List<T> {
     return withContext(Dispatchers.IO) {
-        return@withContext this@get.base.get<T>(filter)
+        base.get<T>(filter)
     }
 }
 suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.get(expression: Expression): List<T> {
     return withContext(Dispatchers.IO) {
-        return@withContext this@get.base.get<T>(expression)
+        base.get<T>(expression)
     }
 }
 suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.delete() {
     withContext(Dispatchers.IO) {
-        this@delete.base.delete<T>()
+        base.delete<T>()
     }
 }
 suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.delete(filter: Map<String, Any>) {
     withContext(Dispatchers.IO) {
-        this@delete.base.delete<T>(filter)
+        base.delete<T>(filter)
     }
 }
 suspend inline fun <reified T: PrimaryKey>Wrapper<StorageDoneDatabase>.delete(element: T) {
     withContext(Dispatchers.IO) {
-        this@delete.base.delete(element)
+        base.delete(element)
     }
 }
 suspend inline fun <reified T: PrimaryKey>Wrapper<StorageDoneDatabase>.delete(elements: List<T>) {
     withContext(Dispatchers.IO) {
-        this@delete.base.delete(elements)
+        base.delete(elements)
     }
 }
 suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.delete(expression: Expression) {
     withContext(Dispatchers.IO) {
-        this@delete.base.delete<T>(expression)
+        base.delete<T>(expression)
     }
 }

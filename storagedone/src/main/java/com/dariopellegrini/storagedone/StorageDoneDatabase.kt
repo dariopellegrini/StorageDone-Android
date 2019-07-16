@@ -178,7 +178,7 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
         field.isAccessible = true
         val elementId = field.get(element)
         val document = database.getDocument("$elementId-${classType.simpleName}")
-        if (document.getString(type) == classType.simpleName) {
+        if (document != null && document.getString(type) == classType.simpleName) {
             database.delete(document)
         }
     }
