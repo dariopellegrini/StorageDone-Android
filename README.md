@@ -16,7 +16,7 @@ Then add as dependency to your app/build.gradle
 ``` groovy
 dependencies {
     ...
-    implementation 'com.github.dariopellegrini:StorageDone-Android:v0.2'
+    implementation 'com.github.dariopellegrini:StorageDone-Android:v0.5'
 }
 ```
 
