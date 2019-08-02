@@ -21,7 +21,7 @@ dependencies {
 ```
 
 ### Usage
-StorageDone lets you save Codable models in a local database very easily.
+StorageDone lets you save models in a local database very easily.
 
 First create a model
 ```kotlin
