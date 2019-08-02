@@ -82,7 +82,7 @@ try {
 ```
 
 ### Coroutines
-Every operation has its suspending version. Each can be used through suspendable extension
+Every operation has its suspending version. Each can be used through suspending extension
 ```kotlin
 database.suspending.insertOrUpdate(teachers)
 
