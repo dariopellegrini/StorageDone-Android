@@ -47,10 +47,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         CoroutineScope(Dispatchers.IO).launch {
-            database.suspending.delete<Pet>()
             database.suspending.insertOrUpdate(pets)
 
-            val orderedPets = database.suspending.get<Pet>("name".ascending(), "date".ascending())
+            val orderedPets = database.get<Pet>("name".ascending, "date".ascending)
 
             orderedPets.forEach {
                 Log.i("Ordered", it.id)

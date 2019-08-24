@@ -2,10 +2,8 @@ package com.dariopellegrini.storagedone.sorting
 
 import com.couchbase.lite.Ordering
 
-fun String.ascending(): Ordering {
-    return Ordering.property(this).ascending()
-}
+val String.ascending: Ordering
+    get() = Ordering.property(this).ascending()
 
-fun String.descending(): Ordering {
-    return Ordering.property(this).descending()
-}
+val String.descending: Ordering
+ get() = Ordering.property(this).descending()
