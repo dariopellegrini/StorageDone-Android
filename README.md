@@ -159,6 +159,12 @@ or(expression1, expression2, expression3)
 database.get(expression)
 ```
 
+### Ordering
+Ordering on queries is performed using extension properties on the attributes' names. It's possible to use more of them to achive an order priority on attributes.
+```kotlin
+val orderedTeachers = database.get<Teacher>("name".ascending, "dateCreated".ascending)
+```
+
 ## Live queries
 Using live queries it's possible to observe database changes.
 ```kotlin
