@@ -182,7 +182,7 @@ val liveQuery = database.live<Teacher>("id" equal "id1") {
 }
 ```
 
-To cancel a live query simply call cancel LiveQuery object.
+To cancel a live query simply call cancel on LiveQuery object.
 ```kotlin
 liveQuery.cancel()
 ```
