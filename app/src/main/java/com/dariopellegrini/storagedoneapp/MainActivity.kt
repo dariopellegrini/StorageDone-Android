@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.util.Log
 import com.dariopellegrini.storagedone.*
 import com.dariopellegrini.storagedone.query.*
+import com.dariopellegrini.storagedone.sorting.ascending
+import com.dariopellegrini.storagedone.sorting.descending
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,6 +37,7 @@ class MainActivity : AppCompatActivity() {
         database = StorageDoneDatabase(this, "pets")
 
         val pets = listOf(Pet("id1", "Engineer", 10, Home("idHome1", "Home1", Address("Street1", "City1")), true, listOf("1", "2", "3"), date2011),
+            Pet("id12", "Engineer", 11, Home("idHome1", "Home1", Address("Street1", "City1")), true, listOf("1", "2", "3"), date2011),
             Pet("id2", "Pet 2", 11, Home("idHome2", "Home2", Address("Street2", "City2")), null, listOf("4", "5", "6"), date2015),
             Pet("id3", "Pet 3", 12, Home("idHome2", "Home2", Address("Street3", "City3")), false, listOf("7", "8", "9"), date2021))
 
@@ -44,7 +47,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         CoroutineScope(Dispatchers.IO).launch {
-            database.insertOrUpdate(pets)
+            database.suspending.delete<Pet>()
+            database.suspending.insertOrUpdate(pets)
+
+            val orderedPets = database.suspending.get<Pet>("name".descending(), "age".ascending())
+
+            orderedPets.forEach {
+                Log.i("Ordered", it.id)
+            }
         }
 
         try {

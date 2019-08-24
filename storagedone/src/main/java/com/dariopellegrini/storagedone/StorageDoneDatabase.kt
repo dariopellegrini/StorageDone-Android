@@ -89,6 +89,29 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
         return list
     }
 
+    inline fun <reified T>get(vararg orderings: Ordering): List<T> {
+        val classType = T::class.java
+        val query = QueryBuilder.select(SelectResult.all())
+            .from(DataSource.database(database))
+            .where(Expression.property(type).equalTo(Expression.string(classType.simpleName)))
+            .orderBy(*orderings)
+
+        val list = mutableListOf<T>()
+        val rs = query.execute()
+        rs.map {
+                result ->
+            val map = result.toMap()[name] as? Map<*, *>
+            if (map != null) {
+                val mutableMap = map.toMutableMap()
+                mutableMap.remove(type)
+                val json = gson.toJson(mutableMap)
+                val element = gson.fromJson<T>(json)
+                list.add(element)
+            }
+        }
+        return list
+    }
+
     inline fun <reified T>get(filter: Map<String, Any>): List<T> {
         val classType = T::class.java
         val startingExpression = Expression.property(type).equalTo(Expression.string(classType.simpleName))
@@ -119,6 +142,30 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
         val query = QueryBuilder.select(SelectResult.all())
             .from(DataSource.database(database))
             .where(startingExpression.and(expression))
+
+        val list = mutableListOf<T>()
+        val rs = query.execute()
+        rs.map {
+                result ->
+            val map = result.toMap()[name] as? Map<*, *>
+            if (map != null) {
+                val mutableMap = map.toMutableMap()
+                mutableMap.remove(type)
+                val json = gson.toJson(mutableMap)
+                val element = gson.fromJson<T>(json)
+                list.add(element)
+            }
+        }
+        return list
+    }
+
+    inline fun <reified T>get(expression: Expression, vararg orderings: Ordering): List<T> {
+        val classType = T::class.java
+        val startingExpression = Expression.property(type).equalTo(Expression.string(classType.simpleName))
+        val query = QueryBuilder.select(SelectResult.all())
+            .from(DataSource.database(database))
+            .where(startingExpression.and(expression))
+            .orderBy(*orderings)
 
         val list = mutableListOf<T>()
         val rs = query.execute()
@@ -230,12 +277,39 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
         return LiveQuery(query, token)
     }
 
-    inline fun <reified T>live(expression: Expression, crossinline closure: (List<T>) -> Unit): LiveQuery {
+    inline fun <reified T>live(vararg orderings: Ordering, crossinline closure: (List<T>) -> Unit): LiveQuery {
+        val classType = T::class.java
+        val query = QueryBuilder.select(SelectResult.all())
+            .from(DataSource.database(database))
+            .where(Expression.property(type).equalTo(Expression.string(classType.simpleName)))
+            .orderBy(*orderings)
+
+        val token = query.addChangeListener { change ->
+            val list = mutableListOf<T>()
+            change.results.map {
+                    result ->
+                val map = result.toMap()[name] as? Map<*, *>
+                if (map != null) {
+                    val mutableMap = map.toMutableMap()
+                    mutableMap.remove(type)
+                    val json = gson.toJson(mutableMap)
+                    val element = gson.fromJson<T>(json)
+                    list.add(element)
+                }
+            }
+            closure(list)
+        }
+        query.execute()
+        return LiveQuery(query, token)
+    }
+
+    inline fun <reified T>live(expression: Expression, vararg orderings: Ordering, crossinline closure: (List<T>) -> Unit): LiveQuery {
         val classType = T::class.java
         val startingExpression = Expression.property(type).equalTo(Expression.string(classType.simpleName))
         val query = QueryBuilder.select(SelectResult.all())
             .from(DataSource.database(database))
             .where(startingExpression.and(expression))
+            .orderBy(*orderings)
 
         val token = query.addChangeListener { change ->
             val list = mutableListOf<T>()

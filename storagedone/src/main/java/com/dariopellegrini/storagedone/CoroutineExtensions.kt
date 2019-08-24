@@ -1,6 +1,7 @@
 package com.dariopellegrini.storagedone
 
 import com.couchbase.lite.Expression
+import com.couchbase.lite.Ordering
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -34,14 +35,19 @@ suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.get(): List<T> {
         base.get<T>()
     }
 }
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.get(vararg orderings: Ordering): List<T> {
+    return withContext(Dispatchers.IO) {
+        base.get<T>(*orderings)
+    }
+}
 suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.get(filter: Map<String, Any>): List<T> {
     return withContext(Dispatchers.IO) {
         base.get<T>(filter)
     }
 }
-suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.get(expression: Expression): List<T> {
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.get(expression: Expression, vararg orderings: Ordering): List<T> {
     return withContext(Dispatchers.IO) {
-        base.get<T>(expression)
+        base.get<T>(expression, *orderings)
     }
 }
 suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.delete() {

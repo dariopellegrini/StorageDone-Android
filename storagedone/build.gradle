@@ -35,5 +35,5 @@ dependencies {
 
     api 'com.couchbase.lite:couchbase-lite-android:2.5.0'
     api 'com.google.code.gson:gson:2.8.5'
-    api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.1.1'
+    api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.2.1'
 }
