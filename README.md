@@ -16,12 +16,12 @@ Then add as dependency to your app/build.gradle
 ``` groovy
 dependencies {
     ...
-    implementation 'com.github.dariopellegrini:StorageDone-Android:v0.2'
+    implementation 'com.github.dariopellegrini:StorageDone-Android:v0.5'
 }
 ```
 
 ### Usage
-StorageDone lets you save Codable models in a local database very easily.
+StorageDone lets you save models in a local database very easily.
 
 First create a model
 ```kotlin
@@ -82,7 +82,7 @@ try {
 ```
 
 ### Coroutines
-Every operation has its suspending version. Each can be used through suspendable extension
+Every operation has its suspending version. Each can be used through suspending extension
 ```kotlin
 database.suspending.insertOrUpdate(teachers)
 
