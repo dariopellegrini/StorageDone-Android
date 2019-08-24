@@ -162,7 +162,7 @@ database.get(expression)
 ### Ordering
 Ordering on queries is performed using extension properties on the attributes' names. It's possible to use more of them to achive an order priority on attributes.
 ```kotlin
-val orderedTeachers = database.get<Teacher>("name".ascending, "dateCreated".ascending)
+val orderedTeachers = database.get<Teacher>("dateCreated".ascending, "name".ascending)
 ```
 
 ## Live queries
