@@ -41,7 +41,12 @@ class MainActivity : AppCompatActivity() {
             Pet("id2", "Pet 2", 11, Home("idHome2", "Home2", Address("Street2", "City2")), null, listOf("4", "5", "6"), date2015),
             Pet("id3", "Pet 3", 12, Home("idHome2", "Home2", Address("Street3", "City3")), false, listOf("7", "8", "9"), date2021))
 
-        val liveQuery = database.live<Pet> {
+        val liveQuery = database.live<Pet>({
+            expression = or("id" equal "id1", "id" equal "id2")
+            orderings = arrayOf("name".ascending, "date".descending)
+            limit = 5
+            skip = 1
+        }) {
             petsList ->
             Log.i("LiveQuery", "Count ${petsList.size}")
         }
@@ -52,7 +57,7 @@ class MainActivity : AppCompatActivity() {
             database.suspending.delete<Pet>()
             database.suspending.insertOrUpdate(pets)
 
-            val databasePets: List<Pet> = database filter {
+            val databasePets = database.get<Pet> {
                 expression = or("id" equal "id1", "id" equal "id2")
                 orderings = arrayOf("name".ascending, "date".descending)
                 limit = 5
