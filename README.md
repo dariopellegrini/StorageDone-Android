@@ -184,7 +184,38 @@ val liveQuery = database.live<Teacher>("id" equal "id1") {
 
 To cancel a live query simply call cancel on LiveQuery object.
 ```kotlin
+
 liveQuery.cancel()
+
+```
+
+## Advanced queries
+Using advanced queries lets to specify filtering expression, ordering logic and priority, limit and skip values. All of these parameters are optional. The only limitation is that skip is ignored if limit parameter is not present.
+```kotlin
+
+val databasePets = database.get<Pet> {
+    expression = or("id" equal "id1", "id" equal "id2")
+    orderings = arrayOf("name".ascending, "date".descending)
+    limit = 5
+    skip = 1
+}
+            
+val teachers: List<Teacher> = database filter {
+    expression = or("id" equal "id1", "id" equal "id2")
+    orderings = arrayOf("name".ascending, "date".descending)
+    limit = 5
+    skip = 1
+}
+
+val liveQuery = database.live<Teacher>({
+    expression = or("id" equal "id1", "id" equal "id2")
+    orderings = arrayOf("name".ascending, "date".descending)
+    limit = 5
+    skip = 1
+}) {
+    teachers ->
+    Log.i("LiveQuery", "Count ${teachers.size}")
+}
 ```
 
 ## Author
