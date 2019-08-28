@@ -193,7 +193,7 @@ liveQuery.cancel()
 Using advanced queries lets to specify filtering expression, ordering logic and priority, limit and skip values. All of these parameters are optional. The only limitation is that skip is ignored if limit parameter is not present.
 ```kotlin
 
-val databasePets = database.get<Pet> {
+val teachers = database.get<Teacher> {
     expression = or("id" equal "id1", "id" equal "id2")
     orderings = arrayOf("name".ascending, "date".descending)
     limit = 5
