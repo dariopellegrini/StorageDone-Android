@@ -2,6 +2,7 @@ package com.dariopellegrini.storagedone
 
 import android.util.Log
 import com.couchbase.lite.Expression
+import com.dariopellegrini.storagedone.query.AdvancedQuery
 
 inline operator fun <reified T>StorageDoneDatabase.plusAssign(elements: List<T>) {
     try {
@@ -28,6 +29,14 @@ inline infix fun <reified T>StorageDoneDatabase.filter(filter: Map<String, Any>)
 inline infix fun <reified T>StorageDoneDatabase.filter(expression: Expression): List<T> {
     return try {
         this.get(expression)
+    } catch (e: Exception) {
+        Log.e("StorageDone", e.localizedMessage)
+        emptyList()
+    }
+}
+inline infix fun <reified T>StorageDoneDatabase.filter(buildQuery: AdvancedQuery.() -> Unit): List<T> {
+    return try {
+        this.get(buildQuery)
     } catch (e: Exception) {
         Log.e("StorageDone", e.localizedMessage)
         emptyList()

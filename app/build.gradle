@@ -5,21 +5,13 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 android {
-    signingConfigs {
-        config {
-            keyAlias 'key0'
-            keyPassword 'eptarefrigeration'
-            storeFile file('/Users/dariopellegrini/Documents/Android/EptaConnection/rn2.ks')
-            storePassword 'eptarefrigeration'
-        }
-    }
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.dariopellegrini.storagedoneapp"
         minSdkVersion 26
         targetSdkVersion 28
         versionCode 1
-        versionName "0.5"
+        versionName "1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -30,7 +22,6 @@ android {
             applicationIdSuffix ".release"
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.config
         }
     }
 }

@@ -52,10 +52,11 @@ class MainActivity : AppCompatActivity() {
             database.suspending.delete<Pet>()
             database.suspending.insertOrUpdate(pets)
 
-            val databasePets = database.get<Pet> {
+            val databasePets: List<Pet> = database filter {
                 expression = or("id" equal "id1", "id" equal "id2")
                 orderings = arrayOf("name".ascending, "date".descending)
                 limit = 5
+                skip = 1
             }
 
             databasePets.forEach {
