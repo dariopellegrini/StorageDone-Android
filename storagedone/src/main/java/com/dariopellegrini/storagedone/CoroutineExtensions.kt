@@ -2,6 +2,7 @@ package com.dariopellegrini.storagedone
 
 import com.couchbase.lite.Expression
 import com.couchbase.lite.Ordering
+import com.dariopellegrini.storagedone.query.AdvancedQuery
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -48,6 +49,11 @@ suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.get(filter: Map<Strin
 suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.get(expression: Expression, vararg orderings: Ordering): List<T> {
     return withContext(Dispatchers.IO) {
         base.get<T>(expression, *orderings)
+    }
+}
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.get(crossinline buildQuery: AdvancedQuery.() -> Unit): List<T> {
+    return withContext(Dispatchers.IO) {
+        base.get<T>(buildQuery)
     }
 }
 suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.delete() {

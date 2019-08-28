@@ -46,10 +46,23 @@ class MainActivity : AppCompatActivity() {
             Log.i("LiveQuery", "Count ${petsList.size}")
         }
 
+//        database.insertOrUpdate(pets)
+
         CoroutineScope(Dispatchers.IO).launch {
+            database.suspending.delete<Pet>()
             database.suspending.insertOrUpdate(pets)
 
-            val orderedPets = database.get<Pet>("name".ascending, "date".ascending)
+            val databasePets = database.get<Pet> {
+                expression = or("id" equal "id1", "id" equal "id2")
+                orderings = arrayOf("name".ascending, "date".descending)
+                limit = 5
+            }
+
+            databasePets.forEach {
+                Log.i("Pets", it.id)
+            }
+
+            val orderedPets = database.get<Pet>()
 
             orderedPets.forEach {
                 Log.i("Ordered", it.id)

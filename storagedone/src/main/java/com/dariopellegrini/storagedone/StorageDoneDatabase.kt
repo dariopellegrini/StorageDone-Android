@@ -11,8 +11,7 @@ import com.google.gson.GsonBuilder
 import java.text.SimpleDateFormat
 import java.util.*
 import com.dariopellegrini.storagedone.live.LiveQuery
-
-
+import com.dariopellegrini.storagedone.query.AdvancedQuery
 
 
 open class StorageDoneDatabase(val context: Context, val name: String = "StorageDone") {
@@ -183,6 +182,54 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
         return list
     }
 
+    inline fun <reified T>get(buildQuery: AdvancedQuery.() -> Unit): List<T> {
+        val classType = T::class.java
+        val startingExpression = Expression.property(type).equalTo(Expression.string(classType.simpleName))
+        val advancedQuery = AdvancedQuery()
+        advancedQuery.buildQuery()
+        var query: Query = QueryBuilder.select(SelectResult.all())
+            .from(DataSource.database(database))
+
+        query = if (advancedQuery.expression != null) {
+            (query as From).where(startingExpression.and(advancedQuery.expression!!))
+        } else {
+            (query as From).where(startingExpression)
+        }
+
+        if (advancedQuery.orderings != null) {
+            query = query.orderBy(*advancedQuery.orderings!!)
+        }
+
+        if (advancedQuery.limit != null && advancedQuery.skip != null) {
+            if (query is Where) {
+                query = query.limit(Expression.intValue(advancedQuery.limit!!), Expression.intValue(advancedQuery.skip!!))
+            } else if (query is OrderBy) {
+                query = query.limit(Expression.intValue(advancedQuery.limit!!), Expression.intValue(advancedQuery.skip!!))
+            }
+        } else if (advancedQuery.limit != null) {
+            if (query is Where) {
+                query = query.limit(Expression.intValue(advancedQuery.limit!!))
+            } else if (query is OrderBy) {
+                query = query.limit(Expression.intValue(advancedQuery.limit!!))
+            }
+        }
+
+        val list = mutableListOf<T>()
+        val rs = query.execute()
+        rs.map {
+                result ->
+            val map = result.toMap()[name] as? Map<*, *>
+            if (map != null) {
+                val mutableMap = map.toMutableMap()
+                mutableMap.remove(type)
+                val json = gson.toJson(mutableMap)
+                val element = gson.fromJson<T>(json)
+                list.add(element)
+            }
+        }
+        return list
+    }
+
     inline fun <reified T>delete() {
         val classType = T::class.java
         val query = QueryBuilder.select(
@@ -310,6 +357,58 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
             .from(DataSource.database(database))
             .where(startingExpression.and(expression))
             .orderBy(*orderings)
+
+        val token = query.addChangeListener { change ->
+            val list = mutableListOf<T>()
+            change.results.map {
+                    result ->
+                val map = result.toMap()[name] as? Map<*, *>
+                if (map != null) {
+                    val mutableMap = map.toMutableMap()
+                    mutableMap.remove(type)
+                    val json = gson.toJson(mutableMap)
+                    val element = gson.fromJson<T>(json)
+                    list.add(element)
+                }
+            }
+            closure(list)
+        }
+        query.execute()
+        return LiveQuery(query, token)
+    }
+
+    inline fun <reified T>live(buildQuery: AdvancedQuery.() -> Unit, crossinline closure: (List<T>) -> Unit): LiveQuery {
+        val classType = T::class.java
+        val startingExpression = Expression.property(type).equalTo(Expression.string(classType.simpleName))
+
+        val advancedQuery = AdvancedQuery()
+        advancedQuery.buildQuery()
+        var query: Query = QueryBuilder.select(SelectResult.all())
+            .from(DataSource.database(database))
+
+        query = if (advancedQuery.expression != null) {
+            (query as From).where(startingExpression.and(advancedQuery.expression!!))
+        } else {
+            (query as From).where(startingExpression)
+        }
+
+        if (advancedQuery.orderings != null) {
+            query = query.orderBy(*advancedQuery.orderings!!)
+        }
+
+        if (advancedQuery.limit != null && advancedQuery.skip != null) {
+            if (query is Where) {
+                query = query.limit(Expression.intValue(advancedQuery.limit!!), Expression.intValue(advancedQuery.skip!!))
+            } else if (query is OrderBy) {
+                query = query.limit(Expression.intValue(advancedQuery.limit!!), Expression.intValue(advancedQuery.skip!!))
+            }
+        } else if (advancedQuery.limit != null) {
+            if (query is Where) {
+                query = query.limit(Expression.intValue(advancedQuery.limit!!))
+            } else if (query is OrderBy) {
+                query = query.limit(Expression.intValue(advancedQuery.limit!!))
+            }
+        }
 
         val token = query.addChangeListener { change ->
             val list = mutableListOf<T>()
