@@ -16,7 +16,7 @@ Then add as dependency to your app/build.gradle
 ``` groovy
 dependencies {
     ...
-    implementation 'com.github.dariopellegrini:StorageDone-Android:v0.5'
+    implementation 'com.github.dariopellegrini:StorageDone-Android:v0.7'
 }
 ```
 
@@ -32,7 +32,7 @@ data class Teacher(val id: String,
                    val cv: String?)
 ```
 
-Then create a `StorageDoneDatabase` object and save an instance of a Codable model in it
+Then create a `StorageDoneDatabase` object and save an instance of a model in it
 ```kotlin
 val database = StorageDoneDatabase(context, "teachers")
 val teacher = Teacher("id1", "Sarah", "Jones", 29, "https://my.cv.com/sarah_jones")
