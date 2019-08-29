@@ -1,14 +1,11 @@
 package com.dariopellegrini.storagedone
 
 import android.content.Context
-import android.util.Log
-import com.google.gson.Gson
 import com.couchbase.lite.*
 import com.couchbase.lite.SelectResult
 import com.couchbase.lite.QueryBuilder
 import com.couchbase.lite.MutableDocument
 import com.google.gson.GsonBuilder
-import java.text.SimpleDateFormat
 import java.util.*
 import com.dariopellegrini.storagedone.live.LiveQuery
 import com.dariopellegrini.storagedone.query.AdvancedQuery

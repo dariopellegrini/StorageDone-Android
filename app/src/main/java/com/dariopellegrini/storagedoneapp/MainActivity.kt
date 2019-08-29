@@ -8,16 +8,15 @@ import com.dariopellegrini.storagedone.query.*
 import com.dariopellegrini.storagedone.sorting.ascending
 import com.dariopellegrini.storagedone.sorting.descending
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
-
-
-
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
+import kotlinx.coroutines.*
+import java.io.ByteArrayOutputStream
+import android.graphics.BitmapFactory
 
 class MainActivity : AppCompatActivity() {
 
@@ -133,7 +132,8 @@ data class Teacher(val id: String,
                    val name: String?,
                    val surname: String?,
                    val age: Int?,
-                   val cv: String?): PrimaryKey {
+                   val cv: String?,
+                   val bytes: ByteArray): PrimaryKey {
     override fun primaryKey(): String {
         return "id"
     }

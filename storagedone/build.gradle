@@ -9,16 +9,16 @@ android {
     defaultConfig {
         minSdkVersion 23
         targetSdkVersion 28
-        versionCode 7
-        versionName "0.7"
+        versionCode 9
+        versionName "0.7.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
+        consumerProguardFiles 'proguard-rules.pro'
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -33,7 +33,7 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
-    api 'com.couchbase.lite:couchbase-lite-android:2.5.0'
+    api 'com.couchbase.lite:couchbase-lite-android:2.5.3'
     api 'com.google.code.gson:gson:2.8.5'
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.2.1'
 }
