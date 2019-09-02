@@ -45,6 +45,11 @@ class MainActivity : AppCompatActivity() {
             Log.i("LiveQuery", "Count ${petsList.size}")
         }
 
+        val liveQuery2 = database.live<Teacher> {
+            petsList ->
+            Log.i("LiveQuery", "Count ${petsList.size}")
+        }
+
 //        database.insertOrUpdate(pets)
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -107,6 +112,10 @@ class MainActivity : AppCompatActivity() {
             database.insert(Pet("id1", "Engineer", 10, Home("idHome1", "Home1", Address("Street1", "City1")), true, listOf("1", "2", "3"), Date()))
         }
 
+        addButton2.setOnClickListener {
+            database.insert(Teacher("id1", "Name1", "Surname1", 30, ""))
+        }
+
         cancelButton.setOnClickListener {
             liveQuery.cancel()
         }
@@ -128,7 +137,7 @@ data class Teacher(val id: String,
                    val surname: String?,
                    val age: Int?,
                    val cv: String?,
-                   val bytes: ByteArray): PrimaryKey {
+                   val bytes: ByteArray? = null): PrimaryKey {
     override fun primaryKey(): String {
         return "id"
     }

@@ -13,7 +13,12 @@
         android:id="@+id/addButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Add"/>
+        android:text="Add Pet"/>
+    <Button
+            android:id="@+id/addButton2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add Teacher"/>
     <Button
         android:id="@+id/cancelButton"
         android:layout_width="match_parent"

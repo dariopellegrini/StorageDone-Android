@@ -318,7 +318,7 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
                 }
                 closure(list)
             } catch (e: Exception) {
-                print(e)
+                android.util.Log.e("LiveQuery", "$e")
             }
         }
         query.execute()
@@ -348,7 +348,7 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
                 }
                 closure(list)
             } catch (e: Exception) {
-                print(e)
+                android.util.Log.e("LiveQuery", "$e")
             }
         }
         query.execute()
@@ -379,7 +379,7 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
                 }
                 closure(list)
             } catch (e: Exception) {
-                print(e)
+                android.util.Log.e("LiveQuery", "$e")
             }
         }
         query.execute()
@@ -420,19 +420,23 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
         }
 
         val token = query.addChangeListener { change ->
-            val list = mutableListOf<T>()
-            change.results.map {
+            try {
+                val list = mutableListOf<T>()
+                change.results.map {
                     result ->
-                val map = result.toMap()[name] as? Map<*, *>
-                if (map != null) {
-                    val mutableMap = map.toMutableMap()
-                    mutableMap.remove(type)
-                    val json = gson.toJson(mutableMap)
-                    val element = gson.fromJson<T>(json)
-                    list.add(element)
+                    val map = result.toMap()[name] as? Map<*, *>
+                    if (map != null) {
+                        val mutableMap = map.toMutableMap()
+                        mutableMap.remove(type)
+                        val json = gson.toJson(mutableMap)
+                        val element = gson.fromJson<T>(json)
+                        list.add(element)
+                    }
                 }
+                closure(list)
+            } catch (e: Exception) {
+                android.util.Log.e("LiveQuery", "$e")
             }
-            closure(list)
         }
         query.execute()
         return LiveQuery(query, token)
