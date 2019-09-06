@@ -1,3 +1,5 @@
+![](https://github.com/dariopellegrini/StorageDone-Android/raw/master/storagedone.png)
+
 # StorageDone-Android
 Kotlin library to make easy using local document-oriented database in Android apps.
 
