@@ -224,6 +224,12 @@ val liveQuery = database.live<Teacher>({
 
 Dario Pellegrini, pellegrini.dario.1303@gmail.com
 
+## Credits
+[CouchbaseLite Android](https://github.com/couchbase/couchbase-lite-android)
+
+## Logo
+[Antonio Petruccelli](mailto://info@apdesigner.it)
+
 ## License
 
 StorageDone-Android is available under the MIT license. See the LICENSE file for more info.
