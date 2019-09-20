@@ -9,6 +9,10 @@ import com.google.gson.GsonBuilder
 import java.util.*
 import com.dariopellegrini.storagedone.live.LiveQuery
 import com.dariopellegrini.storagedone.query.AdvancedQuery
+import com.couchbase.lite.CouchbaseLiteException
+import com.couchbase.lite.DataSource.database
+
+
 
 
 open class StorageDoneDatabase(val context: Context, val name: String = "StorageDone") {
@@ -23,7 +27,9 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
 
     inline fun <reified T>insertOrUpdate(element: T) {
         val classType = T::class.java
+        android.util.Log.i("StorageDone", "Mapping begin")
         val map = gson.toJSONMap(element).toMutableMap()
+        android.util.Log.i("StorageDone", "Mapping finihed")
         map[type] = classType.simpleName
 
         val mutableDoc = if (element is PrimaryKey) {
@@ -40,7 +46,21 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
             MutableDocument()
         }.setData(map)
 
+        android.util.Log.i("StorageDone", "Insert begin")
         database.save(mutableDoc)
+        android.util.Log.i("StorageDone", "Insert finished")
+    }
+
+    fun saveByteArray(id: String, byteArray: ByteArray) {
+        val mutableDocument = MutableDocument(id)
+        val blob = Blob("image/jpeg", byteArray)
+        mutableDocument.setBlob("blob", blob)
+        database.save(mutableDocument)
+    }
+
+    fun readReadByteArray(id: String): ByteArray {
+        val mutableDocument = database.getDocument(id)
+        return mutableDocument.getBlob("blob").content
     }
 
     inline fun <reified T>insertOrUpdate(elements: List<T>) {

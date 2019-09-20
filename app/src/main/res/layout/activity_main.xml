@@ -9,6 +9,11 @@
     android:gravity="center"
     tools:context=".MainActivity">
 
+    <ImageView
+        android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="150dp" />
+
     <Button
         android:id="@+id/addButton"
         android:layout_width="match_parent"

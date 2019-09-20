@@ -18,6 +18,8 @@ import kotlinx.coroutines.*
 import java.io.ByteArrayOutputStream
 import android.graphics.BitmapFactory
 
+
+
 class MainActivity : AppCompatActivity() {
 
     lateinit var database: StorageDoneDatabase
@@ -120,6 +122,13 @@ class MainActivity : AppCompatActivity() {
             liveQuery.cancel()
         }
     }
+
+    fun getBytes(): ByteArray {
+        val bitmap = BitmapFactory.decodeResource(resources, R.drawable.my_image)
+        val stream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+        return stream.toByteArray()
+    }
 }
 
 data class Pet(val id: String, val name: String, val age: Int, val home: Home, val isValid: Boolean?, val list: List<String>, val date: Date): PrimaryKey {
@@ -140,5 +149,12 @@ data class Teacher(val id: String,
                    val bytes: ByteArray? = null): PrimaryKey {
     override fun primaryKey(): String {
         return "id"
+    }
+}
+
+data class LocalPageElement(val url: String,
+                       var bytes: ByteArray? = null): PrimaryKey {
+    override fun primaryKey(): String {
+        return "url"
     }
 }
