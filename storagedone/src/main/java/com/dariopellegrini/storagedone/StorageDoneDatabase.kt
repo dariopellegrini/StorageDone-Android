@@ -51,11 +51,20 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
         android.util.Log.i("StorageDone", "Insert finished")
     }
 
-    fun saveByteArray(id: String, byteArray: ByteArray) {
+    fun saveByteArray(id: String, collectionName: String, byteArray: ByteArray) {
         val mutableDocument = MutableDocument(id)
         val blob = Blob("image/jpeg", byteArray)
+        mutableDocument.setString(type, collectionName)
         mutableDocument.setBlob("blob", blob)
         database.save(mutableDocument)
+    }
+
+    fun blobsCount(collectionName: String): Int {
+        val query = QueryBuilder.select(SelectResult.all())
+            .from(DataSource.database(database))
+            .where(Expression.property(type).equalTo(Expression.string(collectionName)))
+        val rs = query.execute()
+        return rs.allResults().size
     }
 
     fun readReadByteArray(id: String): ByteArray {
