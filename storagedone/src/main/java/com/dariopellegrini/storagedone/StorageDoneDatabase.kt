@@ -11,8 +11,15 @@ import com.dariopellegrini.storagedone.live.LiveQuery
 import com.dariopellegrini.storagedone.query.AdvancedQuery
 import com.couchbase.lite.CouchbaseLiteException
 import com.couchbase.lite.DataSource.database
-
-
+import android.util.Base64.NO_WRAP
+import com.google.gson.JsonPrimitive
+import com.google.gson.JsonSerializationContext
+import com.google.gson.JsonElement
+import com.google.gson.JsonParseException
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonDeserializer
+import com.google.gson.JsonSerializer
+import java.lang.reflect.Type
 
 
 open class StorageDoneDatabase(val context: Context, val name: String = "StorageDone") {
@@ -23,7 +30,30 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
     val type = "StorageDoneType"
     val gson = GsonBuilder()
         .registerTypeAdapter(Date::class.java, ser)
-        .registerTypeAdapter(Date::class.java, deser).create()
+        .registerTypeAdapter(Date::class.java, deser)
+        .registerTypeHierarchyAdapter(ByteArray::class.java, ByteArrayToBase64TypeAdapter())
+        .create()
+
+    private class ByteArrayToBase64TypeAdapter : JsonSerializer<ByteArray>,
+        JsonDeserializer<ByteArray> {
+        @Throws(JsonParseException::class)
+        override fun deserialize(
+            json: JsonElement,
+            typeOfT: Type,
+            context: JsonDeserializationContext
+        ): ByteArray {
+            return Base64.getDecoder().decode(json.asString)
+//            return Base64.decode(json.asString, Base64.W)
+        }
+
+        override fun serialize(
+            src: ByteArray,
+            typeOfSrc: Type,
+            context: JsonSerializationContext
+        ): JsonElement {
+            return JsonPrimitive(Base64.getEncoder().encodeToString(src))
+        }
+    }
 
     inline fun <reified T>insertOrUpdate(element: T) {
         val classType = T::class.java
