@@ -231,7 +231,7 @@ Dario Pellegrini, pellegrini.dario.1303@gmail.com
 [CouchbaseLite Android](https://github.com/couchbase/couchbase-lite-android)
 
 ## Logo
-[Antonio Petruccelli](mailto://info@apdesigner.it)
+[Antonio Petruccelli](mailto:info@apdesigner.it)
 
 ## License
 
