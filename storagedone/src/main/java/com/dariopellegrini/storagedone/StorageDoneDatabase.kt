@@ -102,6 +102,11 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
         return mutableDocument.getBlob("blob").content
     }
 
+    fun deleteByteArray(id: String) {
+        val mutableDocument = database.getDocument(id)
+        database.delete(mutableDocument)
+    }
+
     inline fun <reified T>insertOrUpdate(elements: List<T>) {
         elements.forEach {
             insertOrUpdate(it)
