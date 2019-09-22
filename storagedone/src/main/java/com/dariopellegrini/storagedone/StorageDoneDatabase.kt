@@ -102,9 +102,19 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
         return mutableDocument.getBlob("blob").content
     }
 
-    fun deleteByteArray(id: String) {
-        val mutableDocument = database.getDocument(id)
-        database.delete(mutableDocument)
+    fun deleteByteArray(collectionName: String) {
+        val query = QueryBuilder.select(SelectResult.all())
+            .from(DataSource.database(database))
+            .where(Expression.property(type).equalTo(Expression.string(collectionName)))
+        val rs = query.execute()
+        rs.allResults().forEach {
+            result ->
+            if (result.contains("id")) {
+                val id = result.getString("id")
+                val doc = database.getDocument(id)
+                database.delete(doc)
+            }
+        }
     }
 
     inline fun <reified T>insertOrUpdate(elements: List<T>) {
