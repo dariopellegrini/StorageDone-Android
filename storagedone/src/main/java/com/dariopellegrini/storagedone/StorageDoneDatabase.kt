@@ -103,16 +103,18 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
     }
 
     fun deleteByteArray(collectionName: String) {
-        val query = QueryBuilder.select(SelectResult.all())
+        val query = QueryBuilder.select(SelectResult.expression(Meta.id))
             .from(DataSource.database(database))
             .where(Expression.property(type).equalTo(Expression.string(collectionName)))
         val rs = query.execute()
         rs.allResults().forEach {
             result ->
-            if (result.contains("id")) {
-                val id = result.getString("id")
+            val id = result.getString(0)
+            if (id != null) {
                 val doc = database.getDocument(id)
-                database.delete(doc)
+                if (doc != null) {
+                    database.delete(doc)
+                }
             }
         }
     }
