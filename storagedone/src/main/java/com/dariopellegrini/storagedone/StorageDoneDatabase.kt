@@ -12,6 +12,8 @@ import com.dariopellegrini.storagedone.query.AdvancedQuery
 import com.couchbase.lite.CouchbaseLiteException
 import com.couchbase.lite.DataSource.database
 import android.util.Base64.NO_WRAP
+import android.util.Log
+import com.couchbase.lite.Dictionary
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonElement
@@ -20,6 +22,9 @@ import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonSerializer
 import java.lang.reflect.Type
+import com.google.gson.FieldAttributes
+import com.google.gson.ExclusionStrategy
+import kotlin.collections.HashMap
 
 
 open class StorageDoneDatabase(val context: Context, val name: String = "StorageDone") {
@@ -31,35 +36,12 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
     val gson = GsonBuilder()
         .registerTypeAdapter(Date::class.java, ser)
         .registerTypeAdapter(Date::class.java, deser)
-        .registerTypeHierarchyAdapter(ByteArray::class.java, ByteArrayToBase64TypeAdapter())
+        .setExclusionStrategies(byteArrayExclusionStrategy)
         .create()
-
-    private class ByteArrayToBase64TypeAdapter : JsonSerializer<ByteArray>,
-        JsonDeserializer<ByteArray> {
-        @Throws(JsonParseException::class)
-        override fun deserialize(
-            json: JsonElement,
-            typeOfT: Type,
-            context: JsonDeserializationContext
-        ): ByteArray {
-            return Base64.getDecoder().decode(json.asString)
-//            return Base64.decode(json.asString, Base64.W)
-        }
-
-        override fun serialize(
-            src: ByteArray,
-            typeOfSrc: Type,
-            context: JsonSerializationContext
-        ): JsonElement {
-            return JsonPrimitive(Base64.getEncoder().encodeToString(src))
-        }
-    }
 
     inline fun <reified T>insertOrUpdate(element: T) {
         val classType = T::class.java
-        android.util.Log.i("StorageDone", "Mapping begin")
         val map = gson.toJSONMap(element).toMutableMap()
-        android.util.Log.i("StorageDone", "Mapping finihed")
         map[type] = classType.simpleName
 
         val mutableDoc = if (element is PrimaryKey) {
@@ -76,47 +58,18 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
             MutableDocument()
         }.setData(map)
 
-        android.util.Log.i("StorageDone", "Insert begin")
-        database.save(mutableDoc)
-        android.util.Log.i("StorageDone", "Insert finished")
-    }
-
-    fun saveByteArray(id: String, collectionName: String, byteArray: ByteArray) {
-        val mutableDocument = MutableDocument(id)
-        val blob = Blob("image/jpeg", byteArray)
-        mutableDocument.setString(type, collectionName)
-        mutableDocument.setBlob("blob", blob)
-        database.save(mutableDocument)
-    }
-
-    fun blobsCount(collectionName: String): Int {
-        val query = QueryBuilder.select(SelectResult.all())
-            .from(DataSource.database(database))
-            .where(Expression.property(type).equalTo(Expression.string(collectionName)))
-        val rs = query.execute()
-        return rs.allResults().size
-    }
-
-    fun readReadByteArray(id: String): ByteArray {
-        val mutableDocument = database.getDocument(id)
-        return mutableDocument.getBlob("blob").content
-    }
-
-    fun deleteByteArray(collectionName: String) {
-        val query = QueryBuilder.select(SelectResult.expression(Meta.id))
-            .from(DataSource.database(database))
-            .where(Expression.property(type).equalTo(Expression.string(collectionName)))
-        val rs = query.execute()
-        rs.allResults().forEach {
-            result ->
-            val id = result.getString(0)
-            if (id != null) {
-                val doc = database.getDocument(id)
-                if (doc != null) {
-                    database.delete(doc)
-                }
+        classType.declaredFields.filter {
+            it.type == ByteArray::class.java
+        }.forEach {
+                field ->
+            val name = field.name
+            field.isAccessible = true
+            (field.get(element) as? ByteArray)?.let {
+                mutableDoc.setBlob(name, Blob("application/binary", it))
             }
         }
+
+        database.save(mutableDoc)
     }
 
     inline fun <reified T>insertOrUpdate(elements: List<T>) {
@@ -129,8 +82,20 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
         val classType = T::class.java
         val map = gson.toJSONMap(element).toMutableMap()
         map[type] = classType.simpleName
+        val mutableDoc = MutableDocument().setData(map)
 
-        database.save(MutableDocument().setData(map))
+        classType.declaredFields.filter {
+            it.type == ByteArray::class.java
+        }.forEach {
+                field ->
+            val name = field.name
+            field.isAccessible = true
+            (field.get(element) as? ByteArray)?.let {
+                mutableDoc.setBlob(name, Blob("application/binary", it))
+            }
+        }
+
+        database.save(mutableDoc)
     }
 
     inline fun <reified T>insert(elements: List<T>) {
@@ -147,7 +112,7 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
 
         val list = mutableListOf<T>()
         val rs = query.execute()
-        rs.map {
+        rs.forEach {
             result ->
             val map = result.toMap()[name] as? Map<*, *>
             if (map != null) {
@@ -155,6 +120,18 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
                 mutableMap.remove(type)
                 val json = gson.toJson(mutableMap)
                 val element = gson.fromJson<T>(json)
+
+                classType.declaredFields.filter {
+                    it.type == ByteArray::class.java
+                }.forEach {
+                        field ->
+                    val fieldName = field.name
+                    field.isAccessible = true
+                    (result.getValue(name) as? Dictionary)?.getBlob(fieldName)?.let {
+                        field.set(element, it.content)
+                    }
+                }
+
                 list.add(element)
             }
         }
@@ -178,6 +155,18 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
                 mutableMap.remove(type)
                 val json = gson.toJson(mutableMap)
                 val element = gson.fromJson<T>(json)
+
+                classType.declaredFields.filter {
+                    it.type == ByteArray::class.java
+                }.forEach {
+                        field ->
+                    val fieldName = field.name
+                    field.isAccessible = true
+                    (result.getValue(name) as? Dictionary)?.getBlob(fieldName)?.let {
+                        field.set(element, it.content)
+                    }
+                }
+
                 list.add(element)
             }
         }
@@ -202,6 +191,18 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
                 mutableMap.remove(type)
                 val json = gson.toJson(mutableMap)
                 val element = gson.fromJson<T>(json)
+
+                classType.declaredFields.filter {
+                    it.type == ByteArray::class.java
+                }.forEach {
+                        field ->
+                    val fieldName = field.name
+                    field.isAccessible = true
+                    (result.getValue(name) as? Dictionary)?.getBlob(fieldName)?.let {
+                        field.set(element, it.content)
+                    }
+                }
+
                 list.add(element)
             }
         }
@@ -225,6 +226,18 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
                 mutableMap.remove(type)
                 val json = gson.toJson(mutableMap)
                 val element = gson.fromJson<T>(json)
+
+                classType.declaredFields.filter {
+                    it.type == ByteArray::class.java
+                }.forEach {
+                        field ->
+                    val fieldName = field.name
+                    field.isAccessible = true
+                    (result.getValue(name) as? Dictionary)?.getBlob(fieldName)?.let {
+                        field.set(element, it.content)
+                    }
+                }
+
                 list.add(element)
             }
         }
@@ -249,6 +262,18 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
                 mutableMap.remove(type)
                 val json = gson.toJson(mutableMap)
                 val element = gson.fromJson<T>(json)
+
+                classType.declaredFields.filter {
+                    it.type == ByteArray::class.java
+                }.forEach {
+                        field ->
+                    val fieldName = field.name
+                    field.isAccessible = true
+                    (result.getValue(name) as? Dictionary)?.getBlob(fieldName)?.let {
+                        field.set(element, it.content)
+                    }
+                }
+
                 list.add(element)
             }
         }
@@ -297,6 +322,18 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
                 mutableMap.remove(type)
                 val json = gson.toJson(mutableMap)
                 val element = gson.fromJson<T>(json)
+
+                classType.declaredFields.filter {
+                    it.type == ByteArray::class.java
+                }.forEach {
+                        field ->
+                    val fieldName = field.name
+                    field.isAccessible = true
+                    (result.getValue(name) as? Dictionary)?.getBlob(fieldName)?.let {
+                        field.set(element, it.content)
+                    }
+                }
+
                 list.add(element)
             }
         }
@@ -312,8 +349,8 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
 
         query.execute().map {
             result ->
-            if (result.contains("id")) {
-                val id = result.getString("id")
+            val id = result.getString(0)
+            if (id != null) {
                 val doc = database.getDocument(id)
                 database.delete(doc)
             }
@@ -330,8 +367,8 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
 
         query.execute().map {
             result ->
-            if (result.contains("id")) {
-                val id = result.getString("id")
+            val id = result.getString(0)
+            if (id != null) {
                 val doc = database.getDocument(id)
                 database.delete(doc)
             }
@@ -363,8 +400,8 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
 
         query.execute().map {
                 result ->
-            if (result.contains("id")) {
-                val id = result.getString("id")
+            val id = result.getString(0)
+            if (id != null) {
                 val doc = database.getDocument(id)
                 database.delete(doc)
             }
@@ -516,5 +553,44 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
         }
         query.execute()
         return LiveQuery(query, token)
+    }
+
+    // Blobs
+    fun saveByteArray(id: String, collectionName: String, byteArray: ByteArray) {
+        val mutableDocument = MutableDocument(id)
+        val blob = Blob("image/jpeg", byteArray)
+        mutableDocument.setString(type, collectionName)
+        mutableDocument.setBlob("blob", blob)
+        database.save(mutableDocument)
+    }
+
+    fun blobsCount(collectionName: String): Int {
+        val query = QueryBuilder.select(SelectResult.all())
+            .from(DataSource.database(database))
+            .where(Expression.property(type).equalTo(Expression.string(collectionName)))
+        val rs = query.execute()
+        return rs.allResults().size
+    }
+
+    fun readReadByteArray(id: String): ByteArray {
+        val mutableDocument = database.getDocument(id)
+        return mutableDocument.getBlob("blob").content
+    }
+
+    fun deleteByteArray(collectionName: String) {
+        val query = QueryBuilder.select(SelectResult.expression(Meta.id))
+            .from(DataSource.database(database))
+            .where(Expression.property(type).equalTo(Expression.string(collectionName)))
+        val rs = query.execute()
+        rs.allResults().forEach {
+                result ->
+            val id = result.getString(0)
+            if (id != null) {
+                val doc = database.getDocument(id)
+                if (doc != null) {
+                    database.delete(doc)
+                }
+            }
+        }
     }
 }

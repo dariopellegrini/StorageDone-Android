@@ -1,9 +1,6 @@
 package com.dariopellegrini.storagedone
 
-import com.google.gson.Gson
-import com.google.gson.JsonDeserializer
-import com.google.gson.JsonPrimitive
-import com.google.gson.JsonSerializer
+import com.google.gson.*
 import com.google.gson.reflect.TypeToken
 import java.util.*
 
@@ -24,4 +21,16 @@ var ser: JsonSerializer<Date> =
 
 var deser: JsonDeserializer<Date> = JsonDeserializer<Date> { json, typeOfT, context ->
     if (json == null) null else Date(json.asLong)
+}
+
+val byteArrayExclusionStrategy = object : ExclusionStrategy {
+
+    override fun shouldSkipClass(arg0: Class<*>): Boolean {
+        return false
+    }
+
+    override fun shouldSkipField(f: FieldAttributes): Boolean {
+        return f.declaredClass == ByteArray::class.java // || f.name == "bytes"
+    }
+
 }
