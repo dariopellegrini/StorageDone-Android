@@ -36,6 +36,7 @@ class MainActivity : AppCompatActivity() {
         val date2021 = sdf.parse("14-03-2021")
 
         database = StorageDoneDatabase(this, "pets")
+//        val database2 = StorageDoneDatabase(this, "teachers")
 
         val pets = listOf(Pet("id1", "Engineer", 10, Home("idHome1", "Home1", Address("Street1", "City1")), true, listOf("1", "2", "3"), date2011),
             Pet("id12", "Engineer", 11, Home("idHome1", "Home1", Address("Street1", "City1")), true, listOf("1", "2", "3"), date2019),

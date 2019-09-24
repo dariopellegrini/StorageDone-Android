@@ -7,9 +7,9 @@ android {
 
 
     defaultConfig {
-        minSdkVersion 26
+        minSdkVersion 23
         targetSdkVersion 29
-        versionCode 11
+        versionCode 12
         versionName "0.7.3"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -32,7 +32,7 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
-    api 'com.couchbase.lite:couchbase-lite-android:2.5.3'
+    api 'com.couchbase.lite:couchbase-lite-android:2.5.2'
     api 'com.google.code.gson:gson:2.8.5'
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.2.1'
 }
