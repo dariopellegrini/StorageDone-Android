@@ -14,6 +14,11 @@
             android:layout_width="match_parent"
             android:layout_height="150dp" />
 
+    <EditText
+            android:id="@+id/editText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
     <Button
         android:id="@+id/addButton"
         android:layout_width="match_parent"

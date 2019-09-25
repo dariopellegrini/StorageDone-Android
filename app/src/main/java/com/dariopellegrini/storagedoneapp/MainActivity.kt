@@ -17,7 +17,7 @@ import android.graphics.drawable.Drawable
 import kotlinx.coroutines.*
 import java.io.ByteArrayOutputStream
 import android.graphics.BitmapFactory
-
+import androidx.core.widget.addTextChangedListener
 
 
 class MainActivity : AppCompatActivity() {
@@ -122,6 +122,43 @@ class MainActivity : AppCompatActivity() {
         cancelButton.setOnClickListener {
             liveQuery.cancel()
         }
+
+        val productsDatabase = StorageDoneDatabase(this, "products")
+
+        val products = listOf(
+            Product( "id1", "T-shirt sport", "T-shirts", 21.1, "Nike"),
+            Product( "id2", "Jumper sport", "Jumpers", 35.1, "Nike"),
+            Product( "id3", "Jeans male 48", "Jeans", 45.1, "Levis"),
+            Product( "id4", "Jacket red", "Jackets", 49.1, "Levis"),
+            Product( "id5", "Night suit", "Suits", 150.1, "Zara"),
+            Product( "id6", "Male suit", "Suits", 250.1, "Zara"),
+            Product( "id7", "Male black belt", "Accessories", 20.1, "Zara"),
+            Product( "id8", "Sport sneakers", "Shoes", 180.1, "Nike"),
+            Product( "id9", "Goalkeeper gloves", "Accessories", 30.1, "Puma"),
+            Product( "id10", "Back to The Future t-shirt", "T-shirts", 15.1, "Zara"),
+            Product( "id11", "Girl boots", "Shoes", 80.1, "Zara"),
+            Product( "id12", "Girl shoes", "Shoes", 90.1, "Zara"),
+            Product( "id13", "Red shoes", "Shoes", 35.1, "H&M"),
+            Product( "id14", "Black trousers", "Trousers", 25.1, "Primark")
+        )
+
+        productsDatabase += products
+
+        productsDatabase.fulltextIndex<Product>("id", "name", "category", "price", "vendor")
+        editText.addTextChangedListener {
+                text ->
+            val searchProducts = productsDatabase.search<Product>(text.toString()) {
+                orderings = arrayOf("price".ascending)
+            }
+
+            (1..3).forEach {
+                Log.i("Products", " \n")
+            }
+
+            searchProducts.forEach {
+                Log.i("Products", "$it\n")
+            }
+        }
     }
 
     fun getBytes(): ByteArray {
@@ -153,9 +190,8 @@ data class Teacher(val id: String,
     }
 }
 
-data class LocalPageElement(val url: String,
-                       var bytes: ByteArray? = null): PrimaryKey {
+data class Product(val id: String, val name: String, val category: String, val price: Double, val vendor: String): PrimaryKey {
     override fun primaryKey(): String {
-        return "url"
+        return "id"
     }
 }

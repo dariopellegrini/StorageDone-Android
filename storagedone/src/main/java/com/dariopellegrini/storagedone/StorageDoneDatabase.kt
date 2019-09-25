@@ -9,22 +9,7 @@ import com.google.gson.GsonBuilder
 import java.util.*
 import com.dariopellegrini.storagedone.live.LiveQuery
 import com.dariopellegrini.storagedone.query.AdvancedQuery
-import com.couchbase.lite.CouchbaseLiteException
-import com.couchbase.lite.DataSource.database
-import android.util.Base64.NO_WRAP
-import android.util.Log
 import com.couchbase.lite.Dictionary
-import com.google.gson.JsonPrimitive
-import com.google.gson.JsonSerializationContext
-import com.google.gson.JsonElement
-import com.google.gson.JsonParseException
-import com.google.gson.JsonDeserializationContext
-import com.google.gson.JsonDeserializer
-import com.google.gson.JsonSerializer
-import java.lang.reflect.Type
-import com.google.gson.FieldAttributes
-import com.google.gson.ExclusionStrategy
-import kotlin.collections.HashMap
 
 
 open class StorageDoneDatabase(val context: Context, val name: String = "StorageDone") {
@@ -78,6 +63,14 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
         }
     }
 
+    inline fun <reified T>insertOrUpdateBatch(elements: List<T>) {
+        database.inBatch {
+            elements.forEach {
+                insertOrUpdate(it)
+            }
+        }
+    }
+
     inline fun <reified T>insert(element: T) {
         val classType = T::class.java
         val map = gson.toJSONMap(element).toMutableMap()
@@ -99,8 +92,10 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
     }
 
     inline fun <reified T>insert(elements: List<T>) {
-        elements.forEach {
-            insert(it)
+        database.inBatch {
+            elements.forEach {
+                insert(it)
+            }
         }
     }
 
@@ -592,5 +587,114 @@ open class StorageDoneDatabase(val context: Context, val name: String = "Storage
                 }
             }
         }
+    }
+
+    // Fulltext
+    inline fun <reified T>fulltextIndex(vararg values: String) {
+        val classType = T::class.java
+        database.createIndex(
+            "${classType.simpleName}-index",
+            IndexBuilder.fullTextIndex(*(values.map {
+                FullTextIndexItem.property(it)
+            }.toTypedArray())).ignoreAccents(false))
+    }
+
+    inline fun <reified T>search(text: String): List<T> {
+        val classType = T::class.java
+        val query = QueryBuilder.select(SelectResult.all())
+            .from(DataSource.database(database))
+            .where(Expression.property(type).equalTo(Expression.string(classType.simpleName))
+                .and(FullTextExpression.index("${classType.simpleName}-index").match(text))
+            )
+
+        val list = mutableListOf<T>()
+        val rs = query.execute()
+        rs.forEach {
+                result ->
+            val map = result.toMap()[name] as? Map<*, *>
+            if (map != null) {
+                val mutableMap = map.toMutableMap()
+                mutableMap.remove(type)
+                val json = gson.toJson(mutableMap)
+                val element = gson.fromJson<T>(json)
+
+                classType.declaredFields.filter {
+                    it.type == ByteArray::class.java
+                }.forEach {
+                        field ->
+                    val fieldName = field.name
+                    field.isAccessible = true
+                    (result.getValue(name) as? Dictionary)?.getBlob(fieldName)?.let {
+                        field.set(element, it.content)
+                    }
+                }
+
+                list.add(element)
+            }
+        }
+        return list
+    }
+
+    inline fun <reified T>search(text: String, buildQuery: AdvancedQuery.() -> Unit): List<T> {
+        val classType = T::class.java
+        val startingExpression =
+            Expression.property(type).equalTo(Expression.string(classType.simpleName))
+                .and(FullTextExpression.index("${classType.simpleName}-index").match(text))
+
+        val advancedQuery = AdvancedQuery()
+        advancedQuery.buildQuery()
+        var query: Query = QueryBuilder.select(SelectResult.all())
+            .from(DataSource.database(database))
+
+        query = if (advancedQuery.expression != null) {
+            (query as From).where(startingExpression.and(advancedQuery.expression!!))
+        } else {
+            (query as From).where(startingExpression)
+        }
+
+        if (advancedQuery.orderings != null) {
+            query = query.orderBy(*advancedQuery.orderings!!)
+        }
+
+        if (advancedQuery.limit != null && advancedQuery.skip != null) {
+            if (query is Where) {
+                query = query.limit(Expression.intValue(advancedQuery.limit!!), Expression.intValue(advancedQuery.skip!!))
+            } else if (query is OrderBy) {
+                query = query.limit(Expression.intValue(advancedQuery.limit!!), Expression.intValue(advancedQuery.skip!!))
+            }
+        } else if (advancedQuery.limit != null) {
+            if (query is Where) {
+                query = query.limit(Expression.intValue(advancedQuery.limit!!))
+            } else if (query is OrderBy) {
+                query = query.limit(Expression.intValue(advancedQuery.limit!!))
+            }
+        }
+
+        val list = mutableListOf<T>()
+        val rs = query.execute()
+        rs.forEach {
+                result ->
+            val map = result.toMap()[name] as? Map<*, *>
+            if (map != null) {
+                val mutableMap = map.toMutableMap()
+                mutableMap.remove(type)
+                val json = gson.toJson(mutableMap)
+                val element = gson.fromJson<T>(json)
+
+                classType.declaredFields.filter {
+                    it.type == ByteArray::class.java
+                }.forEach {
+                        field ->
+                    val fieldName = field.name
+                    field.isAccessible = true
+                    (result.getValue(name) as? Dictionary)?.getBlob(fieldName)?.let {
+                        field.set(element, it.content)
+                    }
+                }
+
+                list.add(element)
+            }
+        }
+        return list
     }
 }
