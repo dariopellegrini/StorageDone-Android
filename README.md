@@ -223,6 +223,23 @@ val liveQuery = database.live<Teacher>({
 }
 ```
 
+## Fulltext search
+Fulltext search needs to be configured with the oarameters' name that should be indexed.  
+After that a query can be performed with search text and with an optional advanced query.
+
+```kotlin
+// Define the index
+database.fulltextIndex<Teacher>("id", "name", "surname", "age", "cv")
+
+// All results
+database.search<Teacher>("Silvia")
+
+// Results with advanced query
+database.search<Teacher>("Silvia") {
+    orderings = arrayOf("age".ascending)
+}
+```
+
 ## Author
 
 Dario Pellegrini, pellegrini.dario.1303@gmail.com
