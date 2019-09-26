@@ -28,6 +28,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        StorageDoneDatabase.configure(this)
+
         val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH)
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"))
         val date2011 = sdf.parse("14-03-2011")
@@ -35,7 +37,7 @@ class MainActivity : AppCompatActivity() {
         val date2019 = sdf.parse("14-03-2019")
         val date2021 = sdf.parse("14-03-2021")
 
-        database = StorageDoneDatabase(this, "pets")
+        database = StorageDoneDatabase("pets")
 //        val database2 = StorageDoneDatabase(this, "teachers")
 
         val pets = listOf(Pet("id1", "Engineer", 10, Home("idHome1", "Home1", Address("Street1", "City1")), true, listOf("1", "2", "3"), date2011),
@@ -123,7 +125,7 @@ class MainActivity : AppCompatActivity() {
             liveQuery.cancel()
         }
 
-        val productsDatabase = StorageDoneDatabase(this, "products")
+        val productsDatabase = StorageDoneDatabase("products")
 
         val products = listOf(
             Product( "id1", "T-shirt sport", "T-shirts", 21.1, "Nike"),

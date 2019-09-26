@@ -12,9 +12,15 @@ import com.dariopellegrini.storagedone.query.AdvancedQuery
 import com.couchbase.lite.Dictionary
 
 
-open class StorageDoneDatabase(val context: Context, val name: String = "StorageDone") {
+open class StorageDoneDatabase(val name: String = "StorageDone") {
 
-    var config = DatabaseConfiguration(context)
+    companion object {
+        fun configure(context: Context) {
+            CouchbaseLite.init(context)
+        }
+    }
+
+    var config = DatabaseConfiguration()
     var database = Database(name, config)
 
     val type = "StorageDoneType"
