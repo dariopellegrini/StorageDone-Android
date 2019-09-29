@@ -11,7 +11,6 @@ import com.dariopellegrini.storagedone.live.LiveQuery
 import com.dariopellegrini.storagedone.query.AdvancedQuery
 import com.couchbase.lite.Dictionary
 
-
 open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     companion object {

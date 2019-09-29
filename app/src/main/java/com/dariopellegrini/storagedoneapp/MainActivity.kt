@@ -18,6 +18,7 @@ import kotlinx.coroutines.*
 import java.io.ByteArrayOutputStream
 import android.graphics.BitmapFactory
 import androidx.core.widget.addTextChangedListener
+import com.google.gson.annotations.SerializedName
 
 
 class MainActivity : AppCompatActivity() {
@@ -55,17 +56,15 @@ class MainActivity : AppCompatActivity() {
             Log.i("LiveQuery", "Count ${petsList.size}")
         }
 
-//        database.insertOrUpdate(pets)
+        database.insertOrUpdate(pets)
 
         CoroutineScope(Dispatchers.IO).launch {
             database.suspending.delete<Pet>()
             database.suspending.insertOrUpdate(pets)
 
             val databasePets = database.get<Pet> {
-                expression = or("id" equal "id1", "id" equal "id2")
-                orderings = arrayOf("name".ascending, "date".descending)
-                limit = 5
-                skip = 1
+                expression = or(Pet::id equal "id1", Pet::name equal "Engineer")
+                orderings = arrayOf(Pet::name.ascending(), Pet::date.descending())
             }
 
             databasePets.forEach {
