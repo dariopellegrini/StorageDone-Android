@@ -6,6 +6,8 @@ import com.dariopellegrini.storagedone.toJSONMap
 import com.google.gson.Gson
 import java.util.*
 import kotlin.reflect.KCallable
+import kotlin.reflect.KProperty
+import kotlin.reflect.KType
 
 // String
 
@@ -114,78 +116,79 @@ infix fun String.betweenDates(pair: Pair<Date, Date>): Expression {
     return Expression.property(this).between(Expression.longValue(pair.first.time), Expression.longValue(pair.second.time))
 }
 
+
 // Typesafe
 
-infix fun <T>KCallable<T>.equal(value: Any): Expression {
+infix fun <T: Any> KProperty<T>.equal(value: T): Expression {
     return this.name.equal(value)
 }
 
-infix fun <T>KCallable<T>.notEqual(value: Any): Expression {
+infix fun <T: Any> KProperty<T>.notEqual(value: T): Expression {
     return this.name.notEqual(value)
 }
 
-infix fun <T>KCallable<T>.greaterThan(value: Number): Expression {
+infix fun <T: Number> KProperty<T>.greaterThan(value: T): Expression {
     return Expression.property(this.name).greaterThan(Expression.value(value))
 }
 
-infix fun <T>KCallable<T>.greaterThanOrEqual(value: Number): Expression {
+infix fun <T: Number> KProperty<T>.greaterThanOrEqual(value: T): Expression {
     return Expression.property(this.name).greaterThanOrEqualTo(Expression.value(value))
 }
 
-infix fun <T>KCallable<T>.lessThan(value: Number): Expression {
+infix fun <T: Number> KProperty<T>.lessThan(value: T): Expression {
     return Expression.property(this.name).lessThan(Expression.value(value))
 }
 
-infix fun <T>KCallable<T>.lessThanOrEqual(value: Number): Expression {
+infix fun <T: Number> KProperty<T>.lessThanOrEqual(value: T): Expression {
     return Expression.property(this.name).lessThanOrEqualTo(Expression.value(value))
 }
 
-infix fun <T>KCallable<T>.inside(value: List<Any>): Expression {
+infix fun <T: Any> KProperty<T>.inside(value: List<T>): Expression {
     val expressions = value.map {
         Expression.value(it)
     }
     return Expression.property(this.name).`in`(*ArrayList(expressions).toArray(arrayOf<Expression>()))
 }
 
-infix fun <T>KCallable<T>.contains(value: Any): Expression {
+infix fun <T: Any> KProperty<T>.contains(value: T): Expression {
     return ArrayFunction.contains(Expression.property(this.name), Expression.value(value))
 }
 
-infix fun <T>KCallable<T>.like(value: Any): Expression {
+infix fun <T: Any> KProperty<T>.like(value: Any): Expression {
     return Expression.property(this.name).like(Expression.value(value))
 }
 
-infix fun <T>KCallable<T>.regex(value: String): Expression {
+infix fun <T: Any> KProperty<T>.regex(value: String): Expression {
     return Expression.property(this.name).regex(Expression.string(value))
 }
 
-val <T>KCallable<T>.isNull: Expression
+val <T: Any> KProperty<T?>.isNull: Expression
     get() = Expression.property(this.name).isNullOrMissing
 
-val <T>KCallable<T>.isNotNull: Expression
+val <T: Any> KProperty<T?>.isNotNull: Expression
     get() = Expression.property(this.name).notNullOrMissing()
 
-infix fun <T>KCallable<T>.between(pair: Pair<Number, Number>): Expression {
+infix fun <T: Number> KProperty<T>.between(pair: Pair<T, T>): Expression {
     return Expression.property(this.name).between(Expression.value(pair.first), Expression.value(pair.second))
 }
 
-infix fun <T>KCallable<T>.greaterThan(value: Date): Expression {
+infix fun <T: Date> KProperty<T>.greaterThan(value: T): Expression {
     return Expression.property(this.name).greaterThan(Expression.longValue(value.time))
 }
 
-infix fun <T>KCallable<T>.greaterOrEqualThan(value: Date): Expression {
+infix fun <T: Date> KProperty<T>.greaterOrEqualThan(value: T): Expression {
     return Expression.property(this.name).greaterThanOrEqualTo(Expression.longValue(value.time))
 }
 
-infix fun <T>KCallable<T>.lessThan(value: Date): Expression {
+infix fun <T: Date> KProperty<T>.lessThan(value: T): Expression {
     return Expression.property(this.name).lessThan(Expression.longValue(value.time))
 }
 
-infix fun <T>KCallable<T>.lessOrEqualThan(value: Date): Expression {
+infix fun <T: Date> KProperty<T>.lessOrEqualThan(value: T): Expression {
     return Expression.property(this.name).lessThanOrEqualTo(Expression.longValue(value.time))
 }
 
-infix fun <T>KCallable<T>.betweenDates(pair: Pair<Date, Date>): Expression {
+infix fun <T: Date> KProperty<T>.betweenDates(pair: Pair<T, T>): Expression {
     return Expression.property(this.name).between(Expression.longValue(pair.first.time), Expression.longValue(pair.second.time))
 }
 
