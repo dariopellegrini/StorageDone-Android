@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             database.suspending.delete<Pet>()
-//            database.suspending.insertOrUpdate(pets)
+            database.suspending.insertOrUpdate(pets)
 
             val databasePets = database.get<Pet> {
                 expression = or(Pet::id equal "id1", Pet::name equal "Engineer")
@@ -76,13 +76,6 @@ class MainActivity : AppCompatActivity() {
                 Log.i("Ordered", it.id)
             }
         }
-    }
-
-    fun getBytes(): ByteArray {
-        val bitmap = BitmapFactory.decodeResource(resources, R.drawable.my_image)
-        val stream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
-        return stream.toByteArray()
     }
 }
 
