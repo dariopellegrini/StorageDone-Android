@@ -31,6 +31,11 @@ suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.insertOrUpdate(elemen
         base.insertOrUpdate(elements)
     }
 }
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.insertOrUpdate(elements: Array<T>) {
+    withContext(Dispatchers.Main) {
+        base.insertOrUpdate(elements)
+    }
+}
 suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.get(): List<T> {
     return withContext(Dispatchers.IO) {
         base.get<T>()

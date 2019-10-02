@@ -15,6 +15,8 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     companion object {
         fun configure(context: Context) {
+            Database.log.getFile().setConfig(LogFileConfiguration(context.getCacheDir().toString()))
+            Database.log.getFile().setLevel(LogLevel.INFO);
             CouchbaseLite.init(context)
         }
     }
@@ -63,12 +65,14 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     }
 
     inline fun <reified T>insertOrUpdate(elements: List<T>) {
-        elements.forEach {
-            insertOrUpdate(it)
+        database.inBatch {
+            elements.forEach {
+                insertOrUpdate(it)
+            }
         }
     }
 
-    inline fun <reified T>insertOrUpdateBatch(elements: List<T>) {
+    inline fun <reified T>insertOrUpdate(elements: Array<T>) {
         database.inBatch {
             elements.forEach {
                 insertOrUpdate(it)
