@@ -36,31 +36,33 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         val map = gson.toJSONMap(element).toMutableMap()
         map[type] = classType.simpleName
 
-        val mutableDoc = if (element is PrimaryKey) {
-            val primaryLabel = element.primaryKey()
-            try {
-                val field = classType.getDeclaredField(primaryLabel)
-                field.isAccessible = true
-                val elementId = field.get(element)
-                MutableDocument("$elementId-${classType.simpleName}")
-            } catch (e: Exception) {
-                MutableDocument()
-            }
-        }
-        else if (element is MultiplePrimaryKey) {
-            try {
-                val elementId = element.primaryKeys().fold("") { acc, label ->
-                    val field = classType.getDeclaredField(label)
+        val mutableDoc = when(element) {
+            is PrimaryKey -> {
+                val primaryLabel = element.primaryKey()
+                try {
+                    val field = classType.getDeclaredField(primaryLabel)
                     field.isAccessible = true
-                    "$acc${field.get(element)}"
+                    val elementId = field.get(element)
+                    MutableDocument("$elementId-${classType.simpleName}")
+                } catch (e: Exception) {
+                    MutableDocument()
                 }
-                MutableDocument("$elementId-${classType.simpleName}")
-            } catch (e: Exception) {
+            }
+            is MultiplePrimaryKey -> {
+                try {
+                    val elementId = element.primaryKeys().fold("") { acc, label ->
+                        val field = classType.getDeclaredField(label)
+                        field.isAccessible = true
+                        "$acc${field.get(element)}"
+                    }
+                    MutableDocument("$elementId-${classType.simpleName}")
+                } catch (e: Exception) {
+                    MutableDocument()
+                }
+            }
+            else -> {
                 MutableDocument()
             }
-        }
-        else {
-            MutableDocument()
         }.setData(map)
 
         classType.declaredFields.filter {
