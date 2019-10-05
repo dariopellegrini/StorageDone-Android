@@ -46,6 +46,17 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
             } catch (e: Exception) {
                 MutableDocument()
             }
+        } else if (element is MultiplePrimaryKey) {
+            try {
+                val elementId = element.primaryKeys().fold("") { acc, label ->
+                    val field = classType.getDeclaredField(label)
+                    field.isAccessible = true
+                    "$acc${field.get(element)}"
+                }
+                MutableDocument("$elementId-${classType.simpleName}")
+            } catch (e: Exception) {
+                MutableDocument()
+            }
         } else {
             MutableDocument()
         }.setData(map)
