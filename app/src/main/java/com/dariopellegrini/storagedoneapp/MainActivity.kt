@@ -2,24 +2,9 @@ package com.dariopellegrini.storagedoneapp
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import com.dariopellegrini.storagedone.*
-import com.dariopellegrini.storagedone.query.*
-import com.dariopellegrini.storagedone.sorting.ascending
-import com.dariopellegrini.storagedone.sorting.descending
-import kotlinx.android.synthetic.main.activity_main.*
-import java.lang.Exception
-import java.text.SimpleDateFormat
 import java.util.*
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import kotlinx.coroutines.*
-import java.io.ByteArrayOutputStream
-import android.graphics.BitmapFactory
-import androidx.core.widget.addTextChangedListener
-import com.google.gson.annotations.SerializedName
-import kotlin.reflect.KProperty
 
 
 class MainActivity : AppCompatActivity() {
@@ -49,6 +34,16 @@ class MainActivity : AppCompatActivity() {
 
             val girls = database.suspending.get<Girl>()
 
+            val boy1 = Boy("id1", "Name1", 21)
+
+            database.suspending.insertOrUpdate(boy1)
+
+            val boy2 = Boy("id2", "Name2", 22)
+
+            database.suspending.insertOrUpdate(boy2)
+
+            val boys = database.suspending.get<Boy>()
+
             println(girls)
             println(girls)
         }
@@ -64,6 +59,12 @@ data class Pet(val id: String, val name: String, val age: Int, val home: Home, v
 data class Girl(val id: Int, val name: String, val age: Int): MultiplePrimaryKey {
     override fun primaryKeys(): Array<String> {
         return arrayOf("id", "name")
+    }
+}
+
+data class Boy(val id: String, val name: String, val age: Int): PrimaryKey {
+    override fun primaryKey(): String {
+        return "id"
     }
 }
 

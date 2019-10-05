@@ -15,8 +15,8 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     companion object {
         fun configure(context: Context) {
-            Database.log.getFile().setConfig(LogFileConfiguration(context.getCacheDir().toString()))
-            Database.log.getFile().setLevel(LogLevel.INFO);
+            Database.log.file.config = LogFileConfiguration(context.getCacheDir().toString())
+            Database.log.file.level = LogLevel.ERROR
             CouchbaseLite.init(context)
         }
     }
@@ -46,7 +46,8 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
             } catch (e: Exception) {
                 MutableDocument()
             }
-        } else if (element is MultiplePrimaryKey) {
+        }
+        else if (element is MultiplePrimaryKey) {
             try {
                 val elementId = element.primaryKeys().fold("") { acc, label ->
                     val field = classType.getDeclaredField(label)
@@ -57,7 +58,8 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
             } catch (e: Exception) {
                 MutableDocument()
             }
-        } else {
+        }
+        else {
             MutableDocument()
         }.setData(map)
 
