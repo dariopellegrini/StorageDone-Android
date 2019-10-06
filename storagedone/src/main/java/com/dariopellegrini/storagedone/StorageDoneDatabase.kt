@@ -721,4 +721,9 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         }
         return list
     }
+
+    fun clear() {
+        database.delete()
+        database = Database(name, config)
+    }
 }

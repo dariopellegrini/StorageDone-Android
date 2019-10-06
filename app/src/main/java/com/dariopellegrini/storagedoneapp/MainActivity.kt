@@ -42,6 +42,8 @@ class MainActivity : AppCompatActivity() {
 
             database.suspending.insertOrUpdate(boy2)
 
+            database.suspending.clear()
+
             val boys = database.suspending.get<Boy>()
 
             println(girls)

@@ -86,3 +86,9 @@ suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.delete(expression: Ex
         base.delete<T>(expression)
     }
 }
+
+suspend inline fun Wrapper<StorageDoneDatabase>.clear() {
+    withContext(Dispatchers.IO) {
+        base.clear()
+    }
+}
