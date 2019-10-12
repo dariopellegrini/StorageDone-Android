@@ -17,7 +17,7 @@ suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.insert(element: T) {
     }
 }
 suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.insert(elements: List<T>) {
-    withContext(Dispatchers.Main) {
+    withContext(Dispatchers.IO) {
         base.insert(elements)
     }
 }
@@ -27,32 +27,32 @@ suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.insertOrUpdate(elemen
     }
 }
 suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.insertOrUpdate(elements: List<T>) {
-    withContext(Dispatchers.Main) {
+    withContext(Dispatchers.IO) {
         base.insertOrUpdate(elements)
     }
 }
 suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.insertOrUpdate(elements: Array<T>) {
-    withContext(Dispatchers.Main) {
+    withContext(Dispatchers.IO) {
         base.insertOrUpdate(elements)
     }
 }
 suspend inline fun <reified T: PrimaryKey>Wrapper<StorageDoneDatabase>.insertOrUpdate(element: T, expression: Expression) {
-    withContext(Dispatchers.Main) {
+    withContext(Dispatchers.IO) {
         base.insertOrUpdate(element, expression)
     }
 }
 suspend inline fun <reified T: PrimaryKey>Wrapper<StorageDoneDatabase>.insertOrUpdate(element: T, crossinline onlyIf: (T) -> Expression) {
-    withContext(Dispatchers.Main) {
+    withContext(Dispatchers.IO) {
         base.insertOrUpdate(element, onlyIf)
     }
 }
 suspend inline fun <reified T: PrimaryKey>Wrapper<StorageDoneDatabase>.insertOrUpdate(elements: List<T>, expression: Expression) {
-    withContext(Dispatchers.Main) {
+    withContext(Dispatchers.IO) {
         base.insertOrUpdate(elements, expression)
     }
 }
 suspend inline fun <reified T: PrimaryKey>Wrapper<StorageDoneDatabase>.insertOrUpdate(elements: List<T>, crossinline onlyIf: (T) -> Expression) {
-    withContext(Dispatchers.Main) {
+    withContext(Dispatchers.IO) {
         base.insertOrUpdate(elements, onlyIf)
     }
 }
