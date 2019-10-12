@@ -3,6 +3,9 @@ package com.dariopellegrini.storagedoneapp
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.dariopellegrini.storagedone.*
+import com.dariopellegrini.storagedone.query.and
+import com.dariopellegrini.storagedone.query.equal
+import com.dariopellegrini.storagedone.query.isNull
 import java.util.*
 import kotlinx.coroutines.*
 
@@ -20,34 +23,29 @@ class MainActivity : AppCompatActivity() {
         database = StorageDoneDatabase("pets")
 
         CoroutineScope(Dispatchers.IO).launch {
-            val girl1 = Girl(1, "Lara", 21)
 
-            database.suspending.insertOrUpdate(girl1)
+            database.clear()
 
-            val girl2 = Girl(1, "Lara", 21)
+            val newGirl1 = Girl(11, "Lara", 21, listOf("Bs"))
+            val newGirl2 = Girl(12, "Lara1", 21, listOf("Bs"))
 
-            database.suspending.insertOrUpdate(girl2)
+            database.suspending.insertOrUpdate(listOf(newGirl1, newGirl2))
 
-            val girl3 = Girl(1, "Lara2", 21)
+            val newGirl1Null = Girl(11, "Lara", 21, null)
+            val newGirl2Null = Girl(12, "Lara", 21, null)
 
-            database.suspending.insertOrUpdate(girl3)
+            database.suspending.insertOrUpdate(listOf(newGirl1, newGirl2))
 
-            val girls = database.suspending.get<Girl>()
+            database.insertOrUpdate(listOf(newGirl1Null, newGirl2Null), "name" equal "Lara")
 
-            val boy1 = Boy("id1", "Name1", 21)
+//            database.insertOrUpdate(listOf(newGirl1Null, newGirl2Null)) {
+//                and("id" equal it.id, "cities".isNull)
+//            }
 
-            database.suspending.insertOrUpdate(boy1)
+            val newGirls = database.suspending.get<Girl>()
 
-            val boy2 = Boy("id2", "Name2", 22)
-
-            database.suspending.insertOrUpdate(boy2)
-
-            database.suspending.clear()
-
-            val boys = database.suspending.get<Boy>()
-
-            println(girls)
-            println(girls)
+            println(newGirls)
+            println(newGirls)
         }
     }
 }
@@ -58,9 +56,9 @@ data class Pet(val id: String, val name: String, val age: Int, val home: Home, v
     }
 }
 
-data class Girl(val id: Int, val name: String, val age: Int): MultiplePrimaryKey {
-    override fun primaryKeys(): Array<String> {
-        return arrayOf("id", "name")
+data class Girl(val id: Int, val name: String, val age: Int, val cities: List<String>?): PrimaryKey {
+    override fun primaryKey(): String {
+        return "id"
     }
 }
 

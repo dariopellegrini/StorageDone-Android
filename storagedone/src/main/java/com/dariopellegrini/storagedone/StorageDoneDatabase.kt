@@ -10,6 +10,8 @@ import java.util.*
 import com.dariopellegrini.storagedone.live.LiveQuery
 import com.dariopellegrini.storagedone.query.AdvancedQuery
 import com.couchbase.lite.Dictionary
+import com.dariopellegrini.storagedone.query.and
+import com.dariopellegrini.storagedone.query.equal
 
 open class StorageDoneDatabase(val name: String = "StorageDone") {
 
@@ -91,6 +93,37 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         database.inBatch {
             elements.forEach {
                 insertOrUpdate(it)
+            }
+        }
+    }
+
+    inline fun <reified T: PrimaryKey>insertOrUpdate(element: T, expression: Expression) {
+        val field = T::class.java.getDeclaredField(element.primaryKey())
+        field.isAccessible = true
+        val elementId = field.get(element) ?: ""
+        if (get<T>(and(element.primaryKey() equal elementId, expression)).isNotEmpty()) {
+            insertOrUpdate(element)
+        }
+    }
+
+    inline fun <reified T>insertOrUpdate(elements: T, crossinline onlyIf: (T) -> Expression) {
+        if (get<T>(onlyIf(elements)).isNotEmpty()) {
+            insertOrUpdate(elements)
+        }
+    }
+
+    inline fun <reified T: PrimaryKey>insertOrUpdate(elements: List<T>, expression: Expression) {
+        database.inBatch {
+            elements.forEach {
+                insertOrUpdate(it, expression)
+            }
+        }
+    }
+
+    inline fun <reified T>insertOrUpdate(elements: List<T>, crossinline onlyIf: (T) -> Expression) {
+        database.inBatch {
+            elements.forEach {
+                insertOrUpdate(it, onlyIf)
             }
         }
     }
