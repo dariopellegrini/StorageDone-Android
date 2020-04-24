@@ -17,9 +17,9 @@ fun <T>Gson.toJSONMap(o: T): Map<String, Any> {
 }
 
 var ser: JsonSerializer<Date> =
-    JsonSerializer { src, typeOfSrc, context -> if (src == null) null else JsonPrimitive(src.time) }
+    JsonSerializer { src, _, _ -> if (src == null) null else JsonPrimitive(src.time) }
 
-var deser: JsonDeserializer<Date> = JsonDeserializer<Date> { json, typeOfT, context ->
+var deser: JsonDeserializer<Date> = JsonDeserializer<Date> { json, _, _ ->
     if (json == null) null else Date(json.asLong)
 }
 

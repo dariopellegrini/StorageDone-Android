@@ -26,17 +26,17 @@ class MainActivity : AppCompatActivity() {
 
             database.clear()
 
-            val newGirl1 = Girl(11, "Lara", 21, listOf("Bs"))
-            val newGirl2 = Girl(12, "Lara1", 21, listOf("Bs"))
+            val newGirl1 = Girl(11, "Lara", 21, listOf("Bs"), Date())
+            val newGirl2 = Girl(12, "Lara1", 21, listOf("Bs"), Date())
 
             database.suspending.insertOrUpdate(listOf(newGirl1, newGirl2))
 
-            val newGirl1Null = Girl(11, "Lara", 21, null)
-            val newGirl2Null = Girl(12, "Lara", 21, null)
+            val newGirl1Null = Girl(11, "Lara", 21, null, Date())
+            val newGirl2Null = Girl(12, "Lara", 21, null, Date())
 
             database.suspending.insertOrUpdate(listOf(newGirl1, newGirl2))
 
-            database.insertOrUpdate(listOf(newGirl1Null, newGirl2Null), "name" equal "Lara")
+            database.insertOrUpdate(arrayListOf(newGirl1Null, newGirl2Null), "name" equal "Lara")
 
 //            database.insertOrUpdate(listOf(newGirl1Null, newGirl2Null)) {
 //                and("id" equal it.id, "cities".isNull)
@@ -56,7 +56,7 @@ data class Pet(val id: String, val name: String, val age: Int, val home: Home, v
     }
 }
 
-data class Girl(val id: Int, val name: String, val age: Int, val cities: List<String>?): PrimaryKey {
+data class Girl(val id: Int, val name: String, val age: Int, val cities: List<String>?, val date: Date): PrimaryKey {
     override fun primaryKey(): String {
         return "id"
     }

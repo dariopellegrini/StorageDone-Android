@@ -17,9 +17,9 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     companion object {
         fun configure(context: Context) {
+            CouchbaseLite.init(context)
             Database.log.file.config = LogFileConfiguration(context.getCacheDir().toString())
             Database.log.file.level = LogLevel.ERROR
-            CouchbaseLite.init(context)
         }
     }
 
@@ -183,7 +183,6 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                         field.set(element, it.content)
                     }
                 }
-
                 list.add(element)
             }
         }
@@ -624,9 +623,9 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         return rs.allResults().size
     }
 
-    fun readReadByteArray(id: String): ByteArray {
+    fun readReadByteArray(id: String): ByteArray? {
         val mutableDocument = database.getDocument(id)
-        return mutableDocument.getBlob("blob").content
+        return mutableDocument.getBlob("blob")?.content
     }
 
     fun deleteByteArray(collectionName: String) {
