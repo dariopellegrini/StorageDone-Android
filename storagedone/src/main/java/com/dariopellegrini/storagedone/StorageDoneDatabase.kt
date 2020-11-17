@@ -37,8 +37,9 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     
     inline fun <reified T>insertOrUpdate(element: T) {
         val classType = T::class.java
+        val typeName = typeOf<T>().simpleName
         val map = gson.toJSONMap(element).toMutableMap()
-        map[type] = typeOf<T>().simpleName
+        map[type] = typeName
 
         val mutableDoc = when(element) {
             is PrimaryKey -> {
@@ -47,7 +48,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                     val field = classType.getDeclaredField(primaryLabel)
                     field.isAccessible = true
                     val elementId = field.get(element)
-                    MutableDocument("$elementId-${classType.simpleName}")
+                    MutableDocument("$elementId-$typeName")
                 } catch (e: Exception) {
                     MutableDocument()
                 }
@@ -59,7 +60,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                         field.isAccessible = true
                         "$acc${field.get(element)}"
                     }
-                    MutableDocument("$elementId-${classType.simpleName}")
+                    MutableDocument("$elementId-$typeName")
                 } catch (e: Exception) {
                     MutableDocument()
                 }
@@ -132,8 +133,9 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     inline fun <reified T>insert(element: T) {
         val classType = T::class.java
+        val typeName = typeOf<T>().simpleName
         val map = gson.toJSONMap(element).toMutableMap()
-        map[type] = typeOf<T>().simpleName
+        map[type] = typeName
         val mutableDoc = MutableDocument().setData(map)
 
         classType.declaredFields.filter {
@@ -160,9 +162,10 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     inline fun <reified T>get(): List<T> {
         val classType = T::class.java
+        val typeName = typeOf<T>().simpleName
         val query = QueryBuilder.select(SelectResult.all())
             .from(DataSource.database(database))
-            .where(Expression.property(type).equalTo(Expression.string(typeOf<T>().simpleName)))
+            .where(Expression.property(type).equalTo(Expression.string(typeName)))
 
         val list = mutableListOf<T>()
         val rs = query.execute()
