@@ -651,7 +651,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     inline fun <reified T>fulltextIndex(vararg values: String) {
         val classType = T::class.java
         database.createIndex(
-            "${typeOf<T>().simpleName}-index",
+            "${typeOf<T>()}-index",
             IndexBuilder.fullTextIndex(*(values.map {
                 FullTextIndexItem.property(it)
             }.toTypedArray())).ignoreAccents(false))
@@ -662,7 +662,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         val query = QueryBuilder.select(SelectResult.all())
             .from(DataSource.database(database))
             .where(Expression.property(type).equalTo(Expression.string(typeOf<T>().simpleName))
-                .and(FullTextExpression.index("${typeOf<T>().simpleName}-index").match(text))
+                .and(FullTextExpression.index("${typeOf<T>()}-index").match(text))
             )
 
         val list = mutableListOf<T>()
@@ -697,7 +697,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         val classType = T::class.java
         val startingExpression =
             Expression.property(type).equalTo(Expression.string(typeOf<T>().simpleName))
-                .and(FullTextExpression.index("${typeOf<T>().simpleName}-index").match(text))
+                .and(FullTextExpression.index("${typeOf<T>()}-index").match(text))
 
         val advancedQuery = AdvancedQuery()
         advancedQuery.buildQuery()
