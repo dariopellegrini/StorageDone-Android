@@ -12,7 +12,9 @@ import com.dariopellegrini.storagedone.query.AdvancedQuery
 import com.couchbase.lite.Dictionary
 import com.dariopellegrini.storagedone.query.and
 import com.dariopellegrini.storagedone.query.equal
+import kotlin.reflect.typeOf
 
+@OptIn(ExperimentalStdlibApi::class)
 open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     companion object {
@@ -32,11 +34,11 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         .registerTypeAdapter(Date::class.java, deser)
         .setExclusionStrategies(byteArrayExclusionStrategy)
         .create()
-
+    
     inline fun <reified T>insertOrUpdate(element: T) {
         val classType = T::class.java
         val map = gson.toJSONMap(element).toMutableMap()
-        map[type] = classType.simpleName
+        map[type] = typeOf<T>().toString()
 
         val mutableDoc = when(element) {
             is PrimaryKey -> {
@@ -131,7 +133,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     inline fun <reified T>insert(element: T) {
         val classType = T::class.java
         val map = gson.toJSONMap(element).toMutableMap()
-        map[type] = classType.simpleName
+        map[type] = typeOf<T>().toString()
         val mutableDoc = MutableDocument().setData(map)
 
         classType.declaredFields.filter {
@@ -160,7 +162,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         val classType = T::class.java
         val query = QueryBuilder.select(SelectResult.all())
             .from(DataSource.database(database))
-            .where(Expression.property(type).equalTo(Expression.string(classType.simpleName)))
+            .where(Expression.property(type).equalTo(Expression.string(typeOf<T>().toString())))
 
         val list = mutableListOf<T>()
         val rs = query.execute()
@@ -193,7 +195,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         val classType = T::class.java
         val query = QueryBuilder.select(SelectResult.all())
             .from(DataSource.database(database))
-            .where(Expression.property(type).equalTo(Expression.string(classType.simpleName)))
+            .where(Expression.property(type).equalTo(Expression.string(typeOf<T>().toString())))
             .orderBy(*orderings)
 
         val list = mutableListOf<T>()
@@ -226,7 +228,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     inline fun <reified T>get(filter: Map<String, Any>): List<T> {
         val classType = T::class.java
-        val startingExpression = Expression.property(type).equalTo(Expression.string(classType.simpleName))
+        val startingExpression = Expression.property(type).equalTo(Expression.string(typeOf<T>().toString()))
         val whereExpression = filter.whereExpression(startingExpression)
         val query = QueryBuilder.select(SelectResult.all())
                 .from(DataSource.database(database))
@@ -262,7 +264,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     inline fun <reified T>get(expression: Expression): List<T> {
         val classType = T::class.java
-        val startingExpression = Expression.property(type).equalTo(Expression.string(classType.simpleName))
+        val startingExpression = Expression.property(type).equalTo(Expression.string(typeOf<T>().toString()))
         val query = QueryBuilder.select(SelectResult.all())
             .from(DataSource.database(database))
             .where(startingExpression.and(expression))
@@ -297,7 +299,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     inline fun <reified T>get(expression: Expression, vararg orderings: Ordering): List<T> {
         val classType = T::class.java
-        val startingExpression = Expression.property(type).equalTo(Expression.string(classType.simpleName))
+        val startingExpression = Expression.property(type).equalTo(Expression.string(typeOf<T>().toString()))
         val query = QueryBuilder.select(SelectResult.all())
             .from(DataSource.database(database))
             .where(startingExpression.and(expression))
@@ -333,7 +335,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     inline fun <reified T>get(buildQuery: AdvancedQuery.() -> Unit): List<T> {
         val classType = T::class.java
-        val startingExpression = Expression.property(type).equalTo(Expression.string(classType.simpleName))
+        val startingExpression = Expression.property(type).equalTo(Expression.string(typeOf<T>().toString()))
         val advancedQuery = AdvancedQuery()
         advancedQuery.buildQuery()
         var query: Query = QueryBuilder.select(SelectResult.all())
@@ -396,7 +398,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         val query = QueryBuilder.select(
                 SelectResult.expression(Meta.id))
                 .from(DataSource.database(database))
-                .where(Expression.property(type).equalTo(Expression.string(classType.simpleName)))
+                .where(Expression.property(type).equalTo(Expression.string(typeOf<T>().toString())))
 
         query.execute().map {
             result ->
@@ -410,7 +412,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     inline fun <reified T>delete(filter: Map<String, Any>) {
         val classType = T::class.java
-        val startingExpression = Expression.property(type).equalTo(Expression.string(classType.simpleName))
+        val startingExpression = Expression.property(type).equalTo(Expression.string(typeOf<T>().toString()))
         val whereExpression = filter.whereExpression(startingExpression)
         val query = QueryBuilder.select(SelectResult.expression(Meta.id))
                 .from(DataSource.database(database))
@@ -432,8 +434,8 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         val field = classType.getDeclaredField(primaryLabel)
         field.isAccessible = true
         val elementId = field.get(element)
-        val document = database.getDocument("$elementId-${classType.simpleName}")
-        if (document != null && document.getString(type) == classType.simpleName) {
+        val document = database.getDocument("$elementId-${typeOf<T>().toString()}")
+        if (document != null && document.getString(type) == typeOf<T>().toString()) {
             database.delete(document)
         }
     }
@@ -444,7 +446,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     inline fun <reified T>delete(expression: Expression) {
         val classType = T::class.java
-        val startingExpression = Expression.property(type).equalTo(Expression.string(classType.simpleName))
+        val startingExpression = Expression.property(type).equalTo(Expression.string(typeOf<T>().toString()))
         val query = QueryBuilder.select(SelectResult.expression(Meta.id))
             .from(DataSource.database(database))
             .where(startingExpression.and(expression))
@@ -464,7 +466,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         val classType = T::class.java
         val query = QueryBuilder.select(SelectResult.all())
             .from(DataSource.database(database))
-            .where(Expression.property(type).equalTo(Expression.string(classType.simpleName)))
+            .where(Expression.property(type).equalTo(Expression.string(typeOf<T>().toString())))
 
         val token = query.addChangeListener { change ->
             try {
@@ -493,7 +495,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         val classType = T::class.java
         val query = QueryBuilder.select(SelectResult.all())
             .from(DataSource.database(database))
-            .where(Expression.property(type).equalTo(Expression.string(classType.simpleName)))
+            .where(Expression.property(type).equalTo(Expression.string(typeOf<T>().toString())))
             .orderBy(*orderings)
 
         val token = query.addChangeListener { change ->
@@ -521,7 +523,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     inline fun <reified T>live(expression: Expression, vararg orderings: Ordering, crossinline closure: (List<T>) -> Unit): LiveQuery {
         val classType = T::class.java
-        val startingExpression = Expression.property(type).equalTo(Expression.string(classType.simpleName))
+        val startingExpression = Expression.property(type).equalTo(Expression.string(typeOf<T>().toString()))
         val query = QueryBuilder.select(SelectResult.all())
             .from(DataSource.database(database))
             .where(startingExpression.and(expression))
@@ -552,7 +554,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     inline fun <reified T>live(buildQuery: AdvancedQuery.() -> Unit, crossinline closure: (List<T>) -> Unit): LiveQuery {
         val classType = T::class.java
-        val startingExpression = Expression.property(type).equalTo(Expression.string(classType.simpleName))
+        val startingExpression = Expression.property(type).equalTo(Expression.string(typeOf<T>().toString()))
 
         val advancedQuery = AdvancedQuery()
         advancedQuery.buildQuery()
@@ -649,7 +651,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     inline fun <reified T>fulltextIndex(vararg values: String) {
         val classType = T::class.java
         database.createIndex(
-            "${classType.simpleName}-index",
+            "${typeOf<T>()}-index",
             IndexBuilder.fullTextIndex(*(values.map {
                 FullTextIndexItem.property(it)
             }.toTypedArray())).ignoreAccents(false))
@@ -659,8 +661,8 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         val classType = T::class.java
         val query = QueryBuilder.select(SelectResult.all())
             .from(DataSource.database(database))
-            .where(Expression.property(type).equalTo(Expression.string(classType.simpleName))
-                .and(FullTextExpression.index("${classType.simpleName}-index").match(text))
+            .where(Expression.property(type).equalTo(Expression.string(typeOf<T>().toString()))
+                .and(FullTextExpression.index("${typeOf<T>()}-index").match(text))
             )
 
         val list = mutableListOf<T>()
@@ -694,8 +696,8 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     inline fun <reified T>search(text: String, buildQuery: AdvancedQuery.() -> Unit): List<T> {
         val classType = T::class.java
         val startingExpression =
-            Expression.property(type).equalTo(Expression.string(classType.simpleName))
-                .and(FullTextExpression.index("${classType.simpleName}-index").match(text))
+            Expression.property(type).equalTo(Expression.string(typeOf<T>().toString()))
+                .and(FullTextExpression.index("${typeOf<T>()}-index").match(text))
 
         val advancedQuery = AdvancedQuery()
         advancedQuery.buildQuery()

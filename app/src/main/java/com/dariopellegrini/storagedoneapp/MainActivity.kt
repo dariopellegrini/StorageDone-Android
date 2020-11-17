@@ -12,7 +12,9 @@ import java.util.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlin.reflect.jvm.javaType
 import kotlin.reflect.jvm.jvmName
+import kotlin.reflect.typeOf
 
 
 class MainActivity : AppCompatActivity() {
@@ -64,19 +66,22 @@ class MainActivity : AppCompatActivity() {
             val teacher5 = Teacher("a5", "Silvia", "B", 30, "https://cv.com/silviab")
             database.insertOrUpdate(teacher5)
 
-//            getClassType<Followed<Human>>()
-//
-//            val p1 = Followed(1, Human("D", "P"), true)
-//            val e1 = Followed(2, Elf("D", "P"), true)
-//
-//            database.suspending.insertOrUpdate(p1)
-//            database.suspending.insertOrUpdate(e1)
-//
-//            val humans = database.suspending.get<Followed<Human>> {
-//                expression = "followed".equal(true)
-//            }
-//
-//            println(humans)
+            val p1 = Followed(1, Human("D", "P"), true)
+            val e1 = Followed(2, Elf("D", "P"), true)
+
+            database.suspending.insertOrUpdate(p1)
+            database.suspending.insertOrUpdate(e1)
+
+            val humans = database.suspending.get<Followed<Human>> {
+                expression = "followed".equal(true)
+            }
+
+            val elves = database.suspending.get<Followed<Elf>> {
+                expression = "followed".equal(true)
+            }
+
+            println(humans)
+            println(elves)
 
 //            database.clear()
 //
@@ -152,7 +157,9 @@ data class Followed<T: Any>(val id: Int, val value: T, var followed: Boolean): P
     }
 }
 
+@ExperimentalStdlibApi
 inline fun <reified T>getClassType() {
-    val type = T::class.jvmName
-    Log.i("Class type", type)
+    val classType = T::class.java.simpleName
+    val type = typeOf<T>()
+    Log.i("ClassType", type.toString())
 }
