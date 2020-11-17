@@ -2,18 +2,25 @@ package com.dariopellegrini.storagedoneapp
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import com.dariopellegrini.storagedone.*
 import com.dariopellegrini.storagedone.query.and
 import com.dariopellegrini.storagedone.query.equal
 import com.dariopellegrini.storagedone.query.isNull
+import com.dariopellegrini.storagedone.sorting.ascending
 import java.util.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlin.reflect.jvm.jvmName
 
 
 class MainActivity : AppCompatActivity() {
 
     lateinit var database: StorageDoneDatabase
 
+    @FlowPreview
+    @ExperimentalCoroutinesApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -24,28 +31,75 @@ class MainActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
 
-            database.clear()
+            database.suspending.delete<Teacher>()
 
-            val newGirl1 = Girl(11, "Lara", 21, listOf("Bs"), Date())
-            val newGirl2 = Girl(12, "Lara1", 21, listOf("Bs"), Date())
+            val teacher1 = Teacher("a1", "Silvia", "B", 30, "https://cv.com/silviab")
+            database.insertOrUpdate(teacher1)
 
-            database.suspending.insertOrUpdate(listOf(newGirl1, newGirl2))
+            val job = CoroutineScope(Dispatchers.IO).launch {
+                database.suspending.live<Teacher> {
+                    expression = "id".equal("a3")
+                    orderings = arrayOf("id".ascending)
+                }.onEach {
+                    Log.i("Flow", "${it.map { it.id }}")
+                }.launchIn(this)
+            }
 
-            val newGirl1Null = Girl(11, "Lara", 21, null, Date())
-            val newGirl2Null = Girl(12, "Lara", 21, null, Date())
+            delay(1000L)
+            val teacher2 = Teacher("a2", "Silvia", "B", 30, "https://cv.com/silviab")
+            database.insertOrUpdate(teacher2)
 
-            database.suspending.insertOrUpdate(listOf(newGirl1, newGirl2))
+            delay(1000)
 
-            database.insertOrUpdate(arrayListOf(newGirl1Null, newGirl2Null), "name" equal "Lara")
+            val teacher3 = Teacher("a3", "Silvia", "B", 30, "https://cv.com/silviab")
+            database.insertOrUpdate(teacher3)
 
-//            database.insertOrUpdate(listOf(newGirl1Null, newGirl2Null)) {
-//                and("id" equal it.id, "cities".isNull)
+            delay(1000)
+
+            val teacher4 = Teacher("a4", "Silvia", "B", 30, "https://cv.com/silviab")
+            database.insertOrUpdate(teacher4)
+
+            delay(1000)
+
+            val teacher5 = Teacher("a5", "Silvia", "B", 30, "https://cv.com/silviab")
+            database.insertOrUpdate(teacher5)
+
+//            getClassType<Followed<Human>>()
+//
+//            val p1 = Followed(1, Human("D", "P"), true)
+//            val e1 = Followed(2, Elf("D", "P"), true)
+//
+//            database.suspending.insertOrUpdate(p1)
+//            database.suspending.insertOrUpdate(e1)
+//
+//            val humans = database.suspending.get<Followed<Human>> {
+//                expression = "followed".equal(true)
 //            }
+//
+//            println(humans)
 
-            val newGirls = database.suspending.get<Girl>()
-
-            println(newGirls)
-            println(newGirls)
+//            database.clear()
+//
+//            val newGirl1 = Girl(11, "Lara", 21, listOf("Bs"), Date())
+//            val newGirl2 = Girl(12, "Lara1", 21, listOf("Bs"), Date())
+//
+//            database.suspending.insertOrUpdate(listOf(newGirl1, newGirl2))
+//
+//            val newGirl1Null = Girl(11, "Lara", 21, null, Date())
+//            val newGirl2Null = Girl(12, "Lara", 21, null, Date())
+//
+//            database.suspending.insertOrUpdate(listOf(newGirl1, newGirl2))
+//
+//            database.insertOrUpdate(arrayListOf(newGirl1Null, newGirl2Null), "name" equal "Lara")
+//
+////            database.insertOrUpdate(listOf(newGirl1Null, newGirl2Null)) {
+////                and("id" equal it.id, "cities".isNull)
+////            }
+//
+//            val newGirls = database.suspending.get<Girl>()
+//
+//            println(newGirls)
+//            println(newGirls)
         }
     }
 }
@@ -87,4 +141,18 @@ data class Product(val id: String, val name: String, val category: String, val p
     override fun primaryKey(): String {
         return "id"
     }
+}
+
+data class Human(val name: String?, val surname: String)
+data class Elf(val name: String?, val surname: String)
+
+data class Followed<T: Any>(val id: Int, val value: T, var followed: Boolean): PrimaryKey {
+    override fun primaryKey(): String {
+        return "id"
+    }
+}
+
+inline fun <reified T>getClassType() {
+    val type = T::class.jvmName
+    Log.i("Class type", type)
 }

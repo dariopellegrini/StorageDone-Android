@@ -1,10 +1,16 @@
 package com.dariopellegrini.storagedone
 
+import android.text.Editable
+import android.text.TextWatcher
+import android.widget.EditText
 import com.couchbase.lite.Expression
 import com.couchbase.lite.Ordering
 import com.dariopellegrini.storagedone.query.AdvancedQuery
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flow
 
 class Wrapper<T>(val base: T)
 
@@ -106,9 +112,54 @@ suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.delete(expression: Ex
         base.delete<T>(expression)
     }
 }
-
 suspend inline fun Wrapper<StorageDoneDatabase>.clear() {
     withContext(Dispatchers.IO) {
         base.clear()
+    }
+}
+
+// Flow
+@ExperimentalCoroutinesApi
+@FlowPreview
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.live() = callbackFlow {
+        val query = base.live<T> {
+            offer(it)
+        }
+        awaitClose {
+            query.cancel()
+        }
+    }
+
+@ExperimentalCoroutinesApi
+@FlowPreview
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.live(vararg orderings: Ordering) = callbackFlow {
+    val query = base.live<T>(*orderings) {
+        offer(it)
+    }
+    awaitClose {
+        query.cancel()
+    }
+}
+
+
+@ExperimentalCoroutinesApi
+@FlowPreview
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.live(expression: Expression, vararg orderings: Ordering) = callbackFlow {
+    val query = base.live<T>(expression, *orderings) {
+        offer(it)
+    }
+    awaitClose {
+        query.cancel()
+    }
+}
+
+@ExperimentalCoroutinesApi
+@FlowPreview
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.live(crossinline buildQuery: AdvancedQuery.() -> Unit) = callbackFlow {
+    val query = base.live<T>(buildQuery) {
+        offer(it)
+    }
+    awaitClose {
+        query.cancel()
     }
 }
