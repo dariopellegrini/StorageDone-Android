@@ -21,6 +21,7 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var database: StorageDoneDatabase
 
+    @OptIn(ExperimentalStdlibApi::class)
     @FlowPreview
     @ExperimentalCoroutinesApi
     override fun onCreate(savedInstanceState: Bundle?) {
