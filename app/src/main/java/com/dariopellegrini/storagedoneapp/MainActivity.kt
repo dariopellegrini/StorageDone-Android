@@ -156,10 +156,3 @@ data class Followed<T: Any>(val id: Int, val value: T, var followed: Boolean): P
         return "id"
     }
 }
-
-@ExperimentalStdlibApi
-inline fun <reified T>getClassType() {
-    val classType = T::class.java.simpleName
-    val type = typeOf<T>()
-    Log.i("ClassType", type.toString())
-}
