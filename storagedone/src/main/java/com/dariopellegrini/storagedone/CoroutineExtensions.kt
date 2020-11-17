@@ -121,7 +121,7 @@ suspend inline fun Wrapper<StorageDoneDatabase>.clear() {
 // Flow
 @ExperimentalCoroutinesApi
 @FlowPreview
-suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.live() = callbackFlow {
+inline fun <reified T>Wrapper<StorageDoneDatabase>.live() = callbackFlow {
         val query = base.live<T> {
             offer(it)
         }
@@ -132,7 +132,7 @@ suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.live() = callbackFlow
 
 @ExperimentalCoroutinesApi
 @FlowPreview
-suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.live(vararg orderings: Ordering) = callbackFlow {
+inline fun <reified T>Wrapper<StorageDoneDatabase>.live(vararg orderings: Ordering) = callbackFlow {
     val query = base.live<T>(*orderings) {
         offer(it)
     }
@@ -144,7 +144,7 @@ suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.live(vararg orderings
 
 @ExperimentalCoroutinesApi
 @FlowPreview
-suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.live(expression: Expression, vararg orderings: Ordering) = callbackFlow {
+inline fun <reified T>Wrapper<StorageDoneDatabase>.live(expression: Expression, vararg orderings: Ordering) = callbackFlow {
     val query = base.live<T>(expression, *orderings) {
         offer(it)
     }
@@ -155,7 +155,7 @@ suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.live(expression: Expr
 
 @ExperimentalCoroutinesApi
 @FlowPreview
-suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.live(crossinline buildQuery: AdvancedQuery.() -> Unit) = callbackFlow {
+inline fun <reified T>Wrapper<StorageDoneDatabase>.live(crossinline buildQuery: AdvancedQuery.() -> Unit) = callbackFlow {
     val query = base.live<T>(buildQuery) {
         offer(it)
     }
