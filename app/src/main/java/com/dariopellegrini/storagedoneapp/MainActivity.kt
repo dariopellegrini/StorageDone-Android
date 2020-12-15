@@ -67,22 +67,22 @@ class MainActivity : AppCompatActivity() {
             val teacher5 = Teacher("a5", "Silvia", "B", 30, "https://cv.com/silviab")
             database.insertOrUpdate(teacher5)
 
-            val p1 = Followed(1, Human("D", "P"), true)
-            val e1 = Followed(2, Elf("D", "P"), true)
+            val p1 = Followed<Human>(1, Human("D", "P"), true)
+            val e1 = Followed<Elf>(2, Elf("D", "P"), true)
 
             database.suspending.insertOrUpdate(p1)
             database.suspending.insertOrUpdate(e1)
 
-            val humans = database.suspending.get<Followed<Human>> {
-                expression = "followed".equal(true)
-            }
+            val humans = database.suspending.get<Followed<Human>>()
 
-            val elves = database.suspending.get<Followed<Elf>> {
-                expression = "followed".equal(true)
-            }
+            val elves = database.suspending.get<Followed<Elf>>()
 
             println(humans)
             println(elves)
+
+            Log.i("LogsList", "${humans}")
+            Log.i("LogsList", "${elves}")
+            Log.i("LogsList", "${database.get<Teacher>()}")
 
 //            database.clear()
 //

@@ -474,7 +474,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         val token = query.addChangeListener { change ->
             try {
                 val list = mutableListOf<T>()
-                change.results.map {
+                change.results?.map {
                         result ->
                     val map = result.toMap()[name] as? Map<*, *>
                     if (map != null) {
@@ -504,7 +504,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         val token = query.addChangeListener { change ->
             try {
                 val list = mutableListOf<T>()
-                change.results.map {
+                change.results?.map {
                         result ->
                     val map = result.toMap()[name] as? Map<*, *>
                     if (map != null) {
@@ -535,7 +535,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         val token = query.addChangeListener { change ->
             try {
                 val list = mutableListOf<T>()
-                change.results.map {
+                change.results?.map {
                         result ->
                     val map = result.toMap()[name] as? Map<*, *>
                     if (map != null) {
@@ -591,7 +591,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         val token = query.addChangeListener { change ->
             try {
                 val list = mutableListOf<T>()
-                change.results.map {
+                change.results?.map {
                     result ->
                     val map = result.toMap()[name] as? Map<*, *>
                     if (map != null) {
