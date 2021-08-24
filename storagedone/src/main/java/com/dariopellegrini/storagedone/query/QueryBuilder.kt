@@ -2,6 +2,7 @@ package com.dariopellegrini.storagedone.query
 
 import com.couchbase.lite.ArrayFunction
 import com.couchbase.lite.Expression
+import com.couchbase.lite.Function
 import com.dariopellegrini.storagedone.toJSONMap
 import com.google.gson.Gson
 import java.util.*
@@ -80,6 +81,14 @@ infix fun String.contains(value: Any): Expression {
 
 infix fun String.like(value: Any): Expression {
     return Expression.property(this).like(Expression.value(value))
+}
+
+fun String.like(value: String, caseInsensitive: Boolean): Expression {
+    return  if (caseInsensitive) {
+        Function.lower(Expression.property(this)).like(Expression.value(value.toLowerCase(Locale.ROOT)))
+    } else {
+        Expression.property(this).like(Expression.value(value))
+    }
 }
 
 infix fun String.regex(value: String): Expression {

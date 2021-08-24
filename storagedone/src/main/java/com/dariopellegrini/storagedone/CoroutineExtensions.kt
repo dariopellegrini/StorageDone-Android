@@ -7,10 +7,9 @@ import com.couchbase.lite.Expression
 import com.couchbase.lite.Ordering
 import com.dariopellegrini.storagedone.query.AdvancedQuery
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.*
 
 class Wrapper<T>(val base: T)
 
@@ -162,4 +161,48 @@ inline fun <reified T>Wrapper<StorageDoneDatabase>.live(crossinline buildQuery: 
     awaitClose {
         query.cancel()
     }
+}
+
+@ExperimentalCoroutinesApi
+@FlowPreview
+inline fun <reified T>Wrapper<StorageDoneDatabase>.bind(channel: ConflatedBroadcastChannel<List<T>>): Flow<List<T>> {
+    return live<T>().onEach {
+        channel.send(it)
+    }
+}
+
+@ExperimentalCoroutinesApi
+@FlowPreview
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.bindCollect(channel: ConflatedBroadcastChannel<List<T>>) {
+    live<T>().collect {
+        channel.send(it)
+    }
+}
+
+@ExperimentalCoroutinesApi
+@FlowPreview
+inline fun <reified T>Wrapper<StorageDoneDatabase>.bind(channel: ConflatedBroadcastChannel<List<T>>,
+                                                        crossinline buildQuery: AdvancedQuery.() -> Unit): Flow<List<T>> {
+    return live<T>().onEach {
+        channel.send(it)
+    }
+}
+
+@ExperimentalCoroutinesApi
+@FlowPreview
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.bindCollect(channel: ConflatedBroadcastChannel<List<T>>,
+                                                                       crossinline buildQuery: AdvancedQuery.() -> Unit) {
+    live<T>(buildQuery).collect {
+        channel.send(it)
+    }
+}
+
+@ExperimentalCoroutinesApi
+@FlowPreview
+suspend inline fun <reified T>StorageDoneDatabase.channel(): Pair<ConflatedBroadcastChannel<List<T>>, Flow<List<T>>> {
+    val channel = ConflatedBroadcastChannel<List<T>>()
+    val flow = suspending.live<T>().onEach {
+        channel.send(it)
+    }
+    return channel to flow
 }

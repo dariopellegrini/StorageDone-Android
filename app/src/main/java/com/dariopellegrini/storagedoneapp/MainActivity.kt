@@ -4,12 +4,12 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import com.dariopellegrini.storagedone.*
-import com.dariopellegrini.storagedone.query.and
-import com.dariopellegrini.storagedone.query.equal
-import com.dariopellegrini.storagedone.query.isNull
+import com.dariopellegrini.storagedone.query.*
 import com.dariopellegrini.storagedone.sorting.ascending
 import java.util.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlin.reflect.jvm.javaType
@@ -20,6 +20,8 @@ import kotlin.reflect.typeOf
 class MainActivity : AppCompatActivity() {
 
     lateinit var database: StorageDoneDatabase
+
+    val channel = ConflatedBroadcastChannel<List<Teacher>>()
 
     @OptIn(ExperimentalStdlibApi::class)
     @FlowPreview
@@ -33,8 +35,19 @@ class MainActivity : AppCompatActivity() {
         database = StorageDoneDatabase("pets")
 
         CoroutineScope(Dispatchers.IO).launch {
+            database.suspending.bindCollect(channel)
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
 
             database.suspending.delete<Teacher>()
+
+            channel.asFlow().onEach {
+                Log.i("BroadcastChannel", "${it.size}")
+            }.launchIn(this)
+
+            val (variable, flow) = database.channel<Teacher>()
+            flow.launchIn(this)
 
             val teacher1 = Teacher("a1", "Silvia", "B", 30, "https://cv.com/silviab")
             database.insertOrUpdate(teacher1)
