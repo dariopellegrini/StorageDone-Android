@@ -37,9 +37,27 @@ data class Teacher(val id: String,
                    val cv: String?)
 ```
 
-Then create a `StorageDoneDatabase` object and save an instance of a model in it
+Then create a `StorageDoneDatabase` object.
+
+> For `0.8+`
+```kotlin
+// In Application class
+override fun onCreate() {
+   super.onCreate()
+   ...
+   StorageDoneDatabase.configure(this)
+}
+
+val database = StorageDoneDatabase("teachers")
+```
+> For `0.7` and earlier versions
 ```kotlin
 val database = StorageDoneDatabase(context, "teachers")
+```
+
+Finally save an instance of a model in it.
+
+```kotlin
 val teacher = Teacher("id1", "Sarah", "Jones", 29, "https://my.cv.com/sarah_jones")
 
 try {
