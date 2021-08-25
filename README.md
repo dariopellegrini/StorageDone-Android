@@ -39,7 +39,7 @@ data class Teacher(val id: String,
 
 Then create a `StorageDoneDatabase` object.
 
-> For `0.8+`
+> For `0.8.1+`
 ```kotlin
 // In Application class
 override fun onCreate() {
@@ -50,7 +50,7 @@ override fun onCreate() {
 
 val database = StorageDoneDatabase("teachers")
 ```
-> For `0.7` and earlier versions
+> For `0.8` and earlier versions
 ```kotlin
 val database = StorageDoneDatabase(context, "teachers")
 ```
