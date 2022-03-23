@@ -61,6 +61,41 @@ suspend inline fun <reified T: PrimaryKey>Wrapper<StorageDoneDatabase>.insertOrU
         base.insertOrUpdate(elements, onlyIf)
     }
 }
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.upsert(element: T) {
+    withContext(Dispatchers.IO) {
+        base.insertOrUpdate(element)
+    }
+}
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.upsert(elements: List<T>) {
+    withContext(Dispatchers.IO) {
+        base.insertOrUpdate(elements)
+    }
+}
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.upsert(elements: Array<T>) {
+    withContext(Dispatchers.IO) {
+        base.insertOrUpdate(elements)
+    }
+}
+suspend inline fun <reified T: PrimaryKey>Wrapper<StorageDoneDatabase>.upsert(element: T, expression: Expression) {
+    withContext(Dispatchers.IO) {
+        base.insertOrUpdate(element, expression)
+    }
+}
+suspend inline fun <reified T: PrimaryKey>Wrapper<StorageDoneDatabase>.upsert(element: T, crossinline onlyIf: (T) -> Expression) {
+    withContext(Dispatchers.IO) {
+        base.insertOrUpdate(element, onlyIf)
+    }
+}
+suspend inline fun <reified T: PrimaryKey>Wrapper<StorageDoneDatabase>.upsert(elements: List<T>, expression: Expression) {
+    withContext(Dispatchers.IO) {
+        base.insertOrUpdate(elements, expression)
+    }
+}
+suspend inline fun <reified T: PrimaryKey>Wrapper<StorageDoneDatabase>.upsert(elements: List<T>, crossinline onlyIf: (T) -> Expression) {
+    withContext(Dispatchers.IO) {
+        base.insertOrUpdate(elements, onlyIf)
+    }
+}
 suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.get(): List<T> {
     return withContext(Dispatchers.IO) {
         base.get<T>()

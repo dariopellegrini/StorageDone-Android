@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
             flow.launchIn(this)
 
             val teacher1 = Teacher("a1", "Silvia", "B", 30, "https://cv.com/silviab")
-            database.insertOrUpdate(teacher1)
+            database.suspending.upsert(teacher1)
 
             val job = CoroutineScope(Dispatchers.IO).launch {
                 database.suspending.live<Teacher> {
@@ -63,28 +63,28 @@ class MainActivity : AppCompatActivity() {
 
             delay(1000L)
             val teacher2 = Teacher("a2", "Silvia", "B", 30, "https://cv.com/silviab")
-            database.insertOrUpdate(teacher2)
+            database.suspending.upsert(teacher2)
 
             delay(1000)
 
             val teacher3 = Teacher("a3", "Silvia", "B", 30, "https://cv.com/silviab")
-            database.insertOrUpdate(teacher3)
+            database.suspending.upsert(teacher3)
 
             delay(1000)
 
             val teacher4 = Teacher("a4", "Silvia", "B", 30, "https://cv.com/silviab")
-            database.insertOrUpdate(teacher4)
+            database.suspending.upsert(teacher4)
 
             delay(1000)
 
             val teacher5 = Teacher("a5", "Silvia", "B", 30, "https://cv.com/silviab")
-            database.insertOrUpdate(teacher5)
+            database.suspending.upsert(teacher5)
 
             val p1 = Followed<Human>(1, Human("D", "P"), true)
             val e1 = Followed<Elf>(2, Elf("D", "P"), true)
 
-            database.suspending.insertOrUpdate(p1)
-            database.suspending.insertOrUpdate(e1)
+            database.suspending.upsert(p1)
+            database.suspending.upsert(e1)
 
             val humans = database.suspending.get<Followed<Human>>()
 
