@@ -3,6 +3,7 @@ package com.dariopellegrini.storagedoneapp
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import com.couchbase.lite.*
 import com.dariopellegrini.storagedone.*
 import com.dariopellegrini.storagedone.query.*
 import com.dariopellegrini.storagedone.sorting.ascending
@@ -18,7 +19,6 @@ import kotlin.reflect.typeOf
 
 
 class MainActivity : AppCompatActivity() {
-
     lateinit var database: StorageDoneDatabase
 
     val channel = ConflatedBroadcastChannel<List<Teacher>>()
@@ -80,6 +80,16 @@ class MainActivity : AppCompatActivity() {
             val teacher5 = Teacher("a5", "Silvia", "B", 30, "https://cv.com/silviab")
             database.suspending.upsert(teacher5)
 
+            val teachers = database.suspending.get<Teacher>()
+
+            database.suspending.delete(teacher3)
+            database.suspending.delete(teacher4)
+            database.suspending.delete(teacher5)
+
+            val teachers2 = database.suspending.get<Teacher>()
+
+            Log.i("LogsList", "Teachers ${teachers2.size}")
+
             val p1 = Followed<Human>(1, Human("D", "P"), true)
             val e1 = Followed<Elf>(2, Elf("D", "P"), true)
 
@@ -93,7 +103,15 @@ class MainActivity : AppCompatActivity() {
             println(humans)
             println(elves)
 
-            Log.i("LogsList", "${humans}")
+            database.suspending.purgeDeletedDocuments()
+
+            val query = QueryBuilder.select(SelectResult.all())
+                .from(DataSource.database(database.database))
+                .where(Meta.deleted)
+            val rs = query.execute()
+            val count = rs.allResults().size
+
+            Log.i("LogsList", "${count}")
             Log.i("LogsList", "${elves}")
             Log.i("LogsList", "${database.get<Teacher>()}")
 

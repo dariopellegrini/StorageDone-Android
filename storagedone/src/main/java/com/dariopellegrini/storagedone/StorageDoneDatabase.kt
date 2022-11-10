@@ -403,30 +403,33 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                 .from(DataSource.database(database))
                 .where(Expression.property(type).equalTo(Expression.string(typeOf<T>().simpleName)))
 
-        query.execute().map {
-            result ->
-            val id = result.getString(0)
-            if (id != null) {
-                val doc = database.getDocument(id)
-                database.delete(doc)
+        database.inBatch {
+            query.execute().map {
+                    result ->
+                val id = result.getString(0)
+                if (id != null) {
+//                val doc = database.getDocument(id)
+                    database.purge(id)
+                }
             }
         }
     }
 
     inline fun <reified T>delete(filter: Map<String, Any>) {
-        val classType = T::class.java
         val startingExpression = Expression.property(type).equalTo(Expression.string(typeOf<T>().simpleName))
         val whereExpression = filter.whereExpression(startingExpression)
         val query = QueryBuilder.select(SelectResult.expression(Meta.id))
                 .from(DataSource.database(database))
                 .where(whereExpression)
 
-        query.execute().map {
-            result ->
-            val id = result.getString(0)
-            if (id != null) {
-                val doc = database.getDocument(id)
-                database.delete(doc)
+        database.inBatch {
+            query.execute().map {
+                    result ->
+                val id = result.getString(0)
+                if (id != null) {
+//                    val doc = database.getDocument(id)
+                    database.purge(id)
+                }
             }
         }
     }
@@ -439,27 +442,47 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         val elementId = field.get(element)
         val document = database.getDocument("$elementId-${typeOf<T>().simpleName}")
         if (document != null && document.getString(type) == typeOf<T>().simpleName) {
-            database.delete(document)
+            database.purge(document)
+//            database.delete(document)
         }
     }
 
     inline fun <reified T: PrimaryKey>delete(elements: List<T>) {
-        elements.forEach { delete(it) }
+        database.inBatch {
+            elements.forEach { delete(it) }
+        }
     }
 
     inline fun <reified T>delete(expression: Expression) {
-        val classType = T::class.java
         val startingExpression = Expression.property(type).equalTo(Expression.string(typeOf<T>().simpleName))
         val query = QueryBuilder.select(SelectResult.expression(Meta.id))
             .from(DataSource.database(database))
             .where(startingExpression.and(expression))
 
-        query.execute().map {
-                result ->
-            val id = result.getString(0)
-            if (id != null) {
-                val doc = database.getDocument(id)
-                database.delete(doc)
+        database.inBatch {
+            query.execute().map {
+                    result ->
+                val id = result.getString(0)
+                if (id != null) {
+//                    val doc = database.getDocument(id)
+                    database.purge(id)
+                }
+            }
+        }
+    }
+
+    fun purgeDeletedDocuments() {
+        val query = QueryBuilder.select(SelectResult.expression(Meta.id))
+            .from(DataSource.database(database))
+            .where(Meta.deleted)
+
+        database.inBatch {
+            query.execute().map {
+                    result ->
+                val id = result.getString(0)
+                if (id != null) {
+                    database.purge(id)
+                }
             }
         }
     }

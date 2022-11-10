@@ -141,11 +141,18 @@ suspend inline fun <reified T: PrimaryKey>Wrapper<StorageDoneDatabase>.delete(el
         base.delete(elements)
     }
 }
+suspend fun Wrapper<StorageDoneDatabase>.purgeDeletedDocuments() {
+    withContext(Dispatchers.IO) {
+        base.purgeDeletedDocuments()
+    }
+}
+
 suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.delete(expression: Expression) {
     withContext(Dispatchers.IO) {
         base.delete<T>(expression)
     }
 }
+
 suspend inline fun Wrapper<StorageDoneDatabase>.clear() {
     withContext(Dispatchers.IO) {
         base.clear()
