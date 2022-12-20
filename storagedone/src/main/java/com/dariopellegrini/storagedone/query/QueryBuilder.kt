@@ -221,3 +221,7 @@ fun and(vararg expressions: Expression): Expression {
     }
     return expression
 }
+
+fun not(expression: Expression): Expression {
+    return Expression.not(expression)
+}

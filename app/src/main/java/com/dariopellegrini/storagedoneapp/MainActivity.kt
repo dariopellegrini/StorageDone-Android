@@ -35,10 +35,6 @@ class MainActivity : AppCompatActivity() {
         database = StorageDoneDatabase("pets")
 
         CoroutineScope(Dispatchers.IO).launch {
-            database.suspending.bindCollect(channel)
-        }
-
-        CoroutineScope(Dispatchers.IO).launch {
 
             database.suspending.delete<Teacher>()
 
@@ -62,7 +58,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             delay(1000L)
-            val teacher2 = Teacher("a2", "Silvia", "B", 30, "https://cv.com/silviab")
+            val teacher2 = Teacher("a2", "Silviaa", "B", 30, "https://cv.com/silviab")
             database.suspending.upsert(teacher2)
 
             delay(1000)
@@ -86,9 +82,13 @@ class MainActivity : AppCompatActivity() {
             database.suspending.delete(teacher4)
             database.suspending.delete(teacher5)
 
-            val teachers2 = database.suspending.get<Teacher>()
+            val teachers2 = database.suspending.get<Teacher>(not("name".equal("Silvia")))
+            val teachers3 = database.suspending.get<Teacher>("name".equal("Silvia"))
+            val teachersa = database.suspending.get<Teacher>()
 
-            Log.i("LogsList", "Teachers ${teachers2.size}")
+            Log.i("LogsList", "Teachers ${teachers2.map { it.name }}")
+            Log.i("LogsList", "Teachers ${teachers3.map { it.name }}")
+            Log.i("LogsList", "Teachers ${teachersa.map { it.name }}")
 
             val p1 = Followed<Human>(1, Human("D", "P"), true)
             val e1 = Followed<Elf>(2, Elf("D", "P"), true)
