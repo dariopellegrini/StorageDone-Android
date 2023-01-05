@@ -35,7 +35,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         .setExclusionStrategies(byteArrayExclusionStrategy)
         .create()
     
-    inline fun <reified T>insertOrUpdate(element: T) {
+    inline fun <reified T>insertOrUpdate(element: T, useExistingValuesAsFallback: Boolean = false) {
         val classType = T::class.java
         val typeName = typeOf<T>().simpleName
         val map = gson.toJSONMap(element).toMutableMap()
@@ -68,7 +68,21 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
             else -> {
                 MutableDocument()
             }
-        }.setData(map)
+        }
+
+        if (useExistingValuesAsFallback) {
+            val existingMap = database.getDocument(mutableDoc.id)?.toMap()
+            existingMap?.keys?.forEach { key ->
+                if (map[key] == null) {
+                    val existingElement = existingMap[key] as? Any
+                    if (existingElement != null) {
+                        map[key] = existingElement
+                    }
+                }
+            }
+        }
+
+        mutableDoc.setData(map)
 
         classType.declaredFields.filter {
             it.type == ByteArray::class.java
@@ -84,18 +98,18 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         database.save(mutableDoc)
     }
 
-    inline fun <reified T>insertOrUpdate(elements: List<T>) {
+    inline fun <reified T>insertOrUpdate(elements: List<T>, useExistingValuesAsFallback: Boolean = false) {
         database.inBatch {
             elements.forEach {
-                insertOrUpdate(it)
+                insertOrUpdate(it, useExistingValuesAsFallback)
             }
         }
     }
 
-    inline fun <reified T>insertOrUpdate(elements: Array<T>) {
+    inline fun <reified T>insertOrUpdate(elements: Array<T>, useExistingValuesAsFallback: Boolean = false) {
         database.inBatch {
             elements.forEach {
-                insertOrUpdate(it)
+                insertOrUpdate(it, useExistingValuesAsFallback)
             }
         }
     }

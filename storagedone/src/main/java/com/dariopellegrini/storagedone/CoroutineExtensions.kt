@@ -26,19 +26,19 @@ suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.insert(elements: List
         base.insert(elements)
     }
 }
-suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.insertOrUpdate(element: T) {
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.insertOrUpdate(element: T, useExistingValuesAsFallback: Boolean = false) {
     withContext(Dispatchers.IO) {
-        base.insertOrUpdate(element)
+        base.insertOrUpdate(element, useExistingValuesAsFallback)
     }
 }
-suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.insertOrUpdate(elements: List<T>) {
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.insertOrUpdate(elements: List<T>, useExistingValuesAsFallback: Boolean = false) {
     withContext(Dispatchers.IO) {
-        base.insertOrUpdate(elements)
+        base.insertOrUpdate(elements, useExistingValuesAsFallback)
     }
 }
-suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.insertOrUpdate(elements: Array<T>) {
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.insertOrUpdate(elements: Array<T>, useExistingValuesAsFallback: Boolean = false) {
     withContext(Dispatchers.IO) {
-        base.insertOrUpdate(elements)
+        base.insertOrUpdate(elements, useExistingValuesAsFallback)
     }
 }
 suspend inline fun <reified T: PrimaryKey>Wrapper<StorageDoneDatabase>.insertOrUpdate(element: T, expression: Expression) {
@@ -61,19 +61,19 @@ suspend inline fun <reified T: PrimaryKey>Wrapper<StorageDoneDatabase>.insertOrU
         base.insertOrUpdate(elements, onlyIf)
     }
 }
-suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.upsert(element: T) {
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.upsert(element: T, useExistingValuesAsFallback: Boolean = false) {
     withContext(Dispatchers.IO) {
-        base.insertOrUpdate(element)
+        base.insertOrUpdate(element, useExistingValuesAsFallback)
     }
 }
-suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.upsert(elements: List<T>) {
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.upsert(elements: List<T>, useExistingValuesAsFallback: Boolean = false) {
     withContext(Dispatchers.IO) {
-        base.insertOrUpdate(elements)
+        base.insertOrUpdate(elements, useExistingValuesAsFallback)
     }
 }
-suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.upsert(elements: Array<T>) {
+suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.upsert(elements: Array<T>, useExistingValuesAsFallback: Boolean = false) {
     withContext(Dispatchers.IO) {
-        base.insertOrUpdate(elements)
+        base.insertOrUpdate(elements, useExistingValuesAsFallback)
     }
 }
 suspend inline fun <reified T: PrimaryKey>Wrapper<StorageDoneDatabase>.upsert(element: T, expression: Expression) {
