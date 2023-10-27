@@ -263,7 +263,7 @@ database.search<Teacher>("Silvia") {
 Dario Pellegrini, pellegrini.dario.1303@gmail.com
 
 ## Credits
-[CouchbaseLite Android](https://github.com/couchbase/couchbase-lite-android)
+[CouchbaseLite Android](https://github.com/couchbase/couchbase-lite-java-ce-root)
 
 ## Logo
 [Antonio Petruccelli](mailto:info@apdesigner.it)
