@@ -12,6 +12,9 @@ import com.dariopellegrini.storagedone.query.AdvancedQuery
 import com.couchbase.lite.Dictionary
 import com.dariopellegrini.storagedone.query.and
 import com.dariopellegrini.storagedone.query.equal
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlin.reflect.typeOf
 
 @OptIn(ExperimentalStdlibApi::class)
@@ -510,19 +513,21 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
         val token = query.addChangeListener { change ->
             try {
-                val list = mutableListOf<T>()
-                change.results?.map {
-                        result ->
-                    val map = result.toMap()[name] as? Map<*, *>
-                    if (map != null) {
-                        val mutableMap = map.toMutableMap()
-                        mutableMap.remove(type)
-                        val json = gson.toJson(mutableMap)
-                        val element = gson.fromJson<T>(json)
-                        list.add(element)
+                CoroutineScope(Dispatchers.Default).launch {
+                    val list = mutableListOf<T>()
+                    change.results?.map {
+                            result ->
+                        val map = result.toMap()[name] as? Map<*, *>
+                        if (map != null) {
+                            val mutableMap = map.toMutableMap()
+                            mutableMap.remove(type)
+                            val json = gson.toJson(mutableMap)
+                            val element = gson.fromJson<T>(json)
+                            list.add(element)
+                        }
                     }
+                    closure(list)
                 }
-                closure(list)
             } catch (e: Exception) {
                 android.util.Log.e("LiveQuery", "$e")
             }
@@ -540,19 +545,21 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
         val token = query.addChangeListener { change ->
             try {
-                val list = mutableListOf<T>()
-                change.results?.map {
-                        result ->
-                    val map = result.toMap()[name] as? Map<*, *>
-                    if (map != null) {
-                        val mutableMap = map.toMutableMap()
-                        mutableMap.remove(type)
-                        val json = gson.toJson(mutableMap)
-                        val element = gson.fromJson<T>(json)
-                        list.add(element)
+                CoroutineScope(Dispatchers.Default).launch {
+                    val list = mutableListOf<T>()
+                    change.results?.map {
+                            result ->
+                        val map = result.toMap()[name] as? Map<*, *>
+                        if (map != null) {
+                            val mutableMap = map.toMutableMap()
+                            mutableMap.remove(type)
+                            val json = gson.toJson(mutableMap)
+                            val element = gson.fromJson<T>(json)
+                            list.add(element)
+                        }
                     }
+                    closure(list)
                 }
-                closure(list)
             } catch (e: Exception) {
                 android.util.Log.e("LiveQuery", "$e")
             }
@@ -571,19 +578,21 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
         val token = query.addChangeListener { change ->
             try {
-                val list = mutableListOf<T>()
-                change.results?.map {
-                        result ->
-                    val map = result.toMap()[name] as? Map<*, *>
-                    if (map != null) {
-                        val mutableMap = map.toMutableMap()
-                        mutableMap.remove(type)
-                        val json = gson.toJson(mutableMap)
-                        val element = gson.fromJson<T>(json)
-                        list.add(element)
+                CoroutineScope(Dispatchers.Default).launch {
+                    val list = mutableListOf<T>()
+                    change.results?.map {
+                            result ->
+                        val map = result.toMap()[name] as? Map<*, *>
+                        if (map != null) {
+                            val mutableMap = map.toMutableMap()
+                            mutableMap.remove(type)
+                            val json = gson.toJson(mutableMap)
+                            val element = gson.fromJson<T>(json)
+                            list.add(element)
+                        }
                     }
+                    closure(list)
                 }
-                closure(list)
             } catch (e: Exception) {
                 android.util.Log.e("LiveQuery", "$e")
             }
@@ -627,19 +636,21 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
         val token = query.addChangeListener { change ->
             try {
-                val list = mutableListOf<T>()
-                change.results?.map {
-                    result ->
-                    val map = result.toMap()[name] as? Map<*, *>
-                    if (map != null) {
-                        val mutableMap = map.toMutableMap()
-                        mutableMap.remove(type)
-                        val json = gson.toJson(mutableMap)
-                        val element = gson.fromJson<T>(json)
-                        list.add(element)
+                CoroutineScope(Dispatchers.Default).launch {
+                    val list = mutableListOf<T>()
+                    change.results?.map {
+                            result ->
+                        val map = result.toMap()[name] as? Map<*, *>
+                        if (map != null) {
+                            val mutableMap = map.toMutableMap()
+                            mutableMap.remove(type)
+                            val json = gson.toJson(mutableMap)
+                            val element = gson.fromJson<T>(json)
+                            list.add(element)
+                        }
                     }
+                    closure(list)
                 }
-                closure(list)
             } catch (e: Exception) {
                 android.util.Log.e("LiveQuery", "$e")
             }

@@ -59,33 +59,30 @@ class MainActivity : AppCompatActivity() {
 //            val teacher1 = Teacher("a1", "Silvia", "B", 30, "https://cv.com/silviab")
 //            database.suspending.upsert(teacher1)
 //
-//            val job = CoroutineScope(Dispatchers.IO).launch {
-//                database.suspending.live<Teacher> {
-//                    expression = "id".equal("a3")
-//                    orderings = arrayOf("id".ascending)
-//                }.onEach {
-//                    Log.i("Flow", "${it.map { it.id }}")
-//                }.launchIn(this)
-//            }
-//
-//            delay(1000L)
-//            val teacher2 = Teacher("a2", "Silviaa", "B", 30, "https://cv.com/silviab")
-//            database.suspending.upsert(teacher2)
-//
-//            delay(1000)
-//
-//            val teacher3 = Teacher("a3", "Silvia", "B", 30, "https://cv.com/silviab")
-//            database.suspending.upsert(teacher3)
-//
-//            delay(1000)
-//
-//            val teacher4 = Teacher("a4", "Silvia", "B", 30, "https://cv.com/silviab")
-//            database.suspending.upsert(teacher4)
-//
-//            delay(1000)
-//
-//            val teacher5 = Teacher("a5", "Silvia", "B", 30, "https://cv.com/silviab")
-//            database.suspending.upsert(teacher5)
+            val job = CoroutineScope(Dispatchers.IO).launch {
+                database.suspending.live<Teacher>().onEach {
+                    Log.i("Flow", "${it.map { it.id }}")
+                }.launchIn(this)
+            }
+
+            delay(1000L)
+            val teacher2 = Teacher("a2", "Silviaa", "B", 30, "https://cv.com/silviab")
+            database.suspending.upsert(teacher2)
+
+            delay(1000)
+
+            val teacher3 = Teacher("a3", "Silvia", "B", 30, "https://cv.com/silviab")
+            database.suspending.upsert(teacher3)
+
+            delay(1000)
+
+            val teacher4 = Teacher("a4", "Silvia", "B", 30, "https://cv.com/silviab")
+            database.suspending.upsert(teacher4)
+
+            delay(1000)
+
+            val teacher5 = Teacher("a5", "Silvia", "B", 30, "https://cv.com/silviab")
+            database.suspending.upsert(teacher5)
 //
 //            val teachers = database.suspending.get<Teacher>()
 //
