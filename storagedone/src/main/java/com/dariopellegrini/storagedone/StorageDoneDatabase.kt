@@ -519,11 +519,17 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                             result ->
                         val map = result.toMap()[name] as? Map<*, *>
                         if (map != null) {
-                            val mutableMap = map.toMutableMap()
-                            mutableMap.remove(type)
-                            val json = gson.toJson(mutableMap)
-                            val element = gson.fromJson<T>(json)
-                            list.add(element)
+                            try {
+                                val mutableMap = map.toMutableMap()
+                                mutableMap.remove(type)
+                                val json = gson.toJson(mutableMap)
+                                val element = gson.fromJson<T>(json)
+                                list.add(element)
+                            } catch (e: Exception) {
+                                android.util.Log.e("LiveQuery", "$e")
+                            } catch (t: Throwable) {
+                                android.util.Log.e("LiveQuery", "$t")
+                            }
                         }
                     }
                     closure(list)
@@ -551,11 +557,17 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                             result ->
                         val map = result.toMap()[name] as? Map<*, *>
                         if (map != null) {
-                            val mutableMap = map.toMutableMap()
-                            mutableMap.remove(type)
-                            val json = gson.toJson(mutableMap)
-                            val element = gson.fromJson<T>(json)
-                            list.add(element)
+                            try {
+                                val mutableMap = map.toMutableMap()
+                                mutableMap.remove(type)
+                                val json = gson.toJson(mutableMap)
+                                val element = gson.fromJson<T>(json)
+                                list.add(element)
+                            } catch (e: Exception) {
+                                android.util.Log.e("LiveQuery", "$e")
+                            } catch (t: Throwable) {
+                                android.util.Log.e("LiveQuery", "$t")
+                            }
                         }
                     }
                     closure(list)
@@ -584,11 +596,17 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                             result ->
                         val map = result.toMap()[name] as? Map<*, *>
                         if (map != null) {
-                            val mutableMap = map.toMutableMap()
-                            mutableMap.remove(type)
-                            val json = gson.toJson(mutableMap)
-                            val element = gson.fromJson<T>(json)
-                            list.add(element)
+                            try {
+                                val mutableMap = map.toMutableMap()
+                                mutableMap.remove(type)
+                                val json = gson.toJson(mutableMap)
+                                val element = gson.fromJson<T>(json)
+                                list.add(element)
+                            } catch (e: Exception) {
+                                android.util.Log.e("LiveQuery", "$e")
+                            } catch (t: Throwable) {
+                                android.util.Log.e("LiveQuery", "$t")
+                            }
                         }
                     }
                     closure(list)
@@ -642,11 +660,17 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                             result ->
                         val map = result.toMap()[name] as? Map<*, *>
                         if (map != null) {
-                            val mutableMap = map.toMutableMap()
-                            mutableMap.remove(type)
-                            val json = gson.toJson(mutableMap)
-                            val element = gson.fromJson<T>(json)
-                            list.add(element)
+                            try {
+                                val mutableMap = map.toMutableMap()
+                                mutableMap.remove(type)
+                                val json = gson.toJson(mutableMap)
+                                val element = gson.fromJson<T>(json)
+                                list.add(element)
+                            } catch (e: Exception) {
+                                android.util.Log.e("LiveQuery", "$e")
+                            } catch (t: Throwable) {
+                                android.util.Log.e("LiveQuery", "$t")
+                            }
                         }
                     }
                     closure(list)
