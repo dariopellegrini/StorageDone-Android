@@ -2,6 +2,7 @@ package com.dariopellegrini.storagedone
 
 import android.content.Context
 import com.couchbase.lite.*
+import com.couchbase.lite.Collection
 import com.couchbase.lite.SelectResult
 import com.couchbase.lite.QueryBuilder
 import com.couchbase.lite.MutableDocument
@@ -12,18 +13,18 @@ import com.dariopellegrini.storagedone.query.AdvancedQuery
 import com.couchbase.lite.Dictionary
 import com.dariopellegrini.storagedone.query.and
 import com.dariopellegrini.storagedone.query.equal
+import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.reflect.typeOf
 
-@OptIn(ExperimentalStdlibApi::class)
 open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     companion object {
         fun configure(context: Context) {
             CouchbaseLite.init(context)
-            Database.log.file.config = LogFileConfiguration(context.getCacheDir().toString())
+            Database.log.file.config = LogFileConfiguration(context.cacheDir.toString())
             Database.log.file.level = LogLevel.ERROR
         }
     }
@@ -32,17 +33,28 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     var database = Database(name, config)
 
     val type = "StorageDoneType"
-    val gson = GsonBuilder()
+    val gson: Gson = GsonBuilder()
         .registerTypeAdapter(Date::class.java, ser)
         .registerTypeAdapter(Date::class.java, deser)
         .setExclusionStrategies(byteArrayExclusionStrategy)
         .create()
-    
+
+    inline fun <reified T>collection(): Collection {
+        val collection = database.getCollection(typeOf<T>().simpleName) ?: database.createCollection(typeOf<T>().simpleName).apply {
+            createIndex(
+                "${typeOf<T>().simpleName}-idIndex",
+                IndexBuilder.valueIndex(
+                    ValueIndexItem.property("id")
+                )
+            )
+        }
+        return collection
+    }
+
     inline fun <reified T>insertOrUpdate(element: T, useExistingValuesAsFallback: Boolean = false) {
         val classType = T::class.java
         val typeName = typeOf<T>().simpleName
         val map = gson.toJSONMap(element).toMutableMap()
-        map[type] = typeName
 
         val mutableDoc = when(element) {
             is PrimaryKey -> {
@@ -74,10 +86,10 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         }
 
         if (useExistingValuesAsFallback) {
-            val existingMap = database.getDocument(mutableDoc.id)?.toMap()
+            val existingMap = collection<T>().getDocument(mutableDoc.id)?.toMap()
             existingMap?.keys?.forEach { key ->
                 if (map[key] == null) {
-                    val existingElement = existingMap[key] as? Any
+                    val existingElement = existingMap[key]
                     if (existingElement != null) {
                         map[key] = existingElement
                     }
@@ -97,12 +109,11 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                 mutableDoc.setBlob(name, Blob("application/binary", it))
             }
         }
-
-        database.save(mutableDoc)
+        collection<T>().save(mutableDoc)
     }
 
     inline fun <reified T>insertOrUpdate(elements: List<T>, useExistingValuesAsFallback: Boolean = false) {
-        database.inBatch {
+        database.inBatch<Exception> {
             elements.forEach {
                 insertOrUpdate(it, useExistingValuesAsFallback)
             }
@@ -110,7 +121,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     }
 
     inline fun <reified T>insertOrUpdate(elements: Array<T>, useExistingValuesAsFallback: Boolean = false) {
-        database.inBatch {
+        database.inBatch<Exception> {
             elements.forEach {
                 insertOrUpdate(it, useExistingValuesAsFallback)
             }
@@ -133,7 +144,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     }
 
     inline fun <reified T: PrimaryKey>insertOrUpdate(elements: List<T>, expression: Expression) {
-        database.inBatch {
+        database.inBatch<Exception> {
             elements.forEach {
                 insertOrUpdate(it, expression)
             }
@@ -141,7 +152,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     }
 
     inline fun <reified T>insertOrUpdate(elements: List<T>, crossinline onlyIf: (T) -> Expression) {
-        database.inBatch {
+        database.inBatch<Exception> {
             elements.forEach {
                 insertOrUpdate(it, onlyIf)
             }
@@ -150,9 +161,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     inline fun <reified T>insert(element: T) {
         val classType = T::class.java
-        val typeName = typeOf<T>().simpleName
         val map = gson.toJSONMap(element).toMutableMap()
-        map[type] = typeName
         val mutableDoc = MutableDocument().setData(map)
 
         classType.declaredFields.filter {
@@ -166,11 +175,11 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
             }
         }
 
-        database.save(mutableDoc)
+        collection<T>().save(mutableDoc)
     }
 
     inline fun <reified T>insert(elements: List<T>) {
-        database.inBatch {
+        database.inBatch<Exception> {
             elements.forEach {
                 insert(it)
             }
@@ -178,20 +187,18 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     }
 
     inline fun <reified T>get(): List<T> {
+        val collection = collection<T>()
         val classType = T::class.java
-        val typeName = typeOf<T>().simpleName
         val query = QueryBuilder.select(SelectResult.all())
-            .from(DataSource.database(database))
-            .where(Expression.property(type).equalTo(Expression.string(typeName)))
+            .from(DataSource.collection(collection))
 
         val list = mutableListOf<T>()
         val rs = query.execute()
         rs.forEach {
             result ->
-            val map = result.toMap()[name] as? Map<*, *>
+            val map = result.toMap()[collection.name] as? Map<*, *>
             if (map != null) {
                 val mutableMap = map.toMutableMap()
-                mutableMap.remove(type)
                 val json = gson.toJson(mutableMap)
                 val element = gson.fromJson<T>(json)
 
@@ -201,7 +208,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                         field ->
                     val fieldName = field.name
                     field.isAccessible = true
-                    (result.getValue(name) as? Dictionary)?.getBlob(fieldName)?.let {
+                    (result.getValue(collection.name) as? Dictionary)?.getBlob(fieldName)?.let {
                         field.set(element, it.content)
                     }
                 }
@@ -212,20 +219,19 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     }
 
     inline fun <reified T>get(vararg orderings: Ordering): List<T> {
+        val collection = collection<T>()
         val classType = T::class.java
         val query = QueryBuilder.select(SelectResult.all())
-            .from(DataSource.database(database))
-            .where(Expression.property(type).equalTo(Expression.string(typeOf<T>().simpleName)))
+            .from(DataSource.collection(collection))
             .orderBy(*orderings)
 
         val list = mutableListOf<T>()
         val rs = query.execute()
         rs.map {
                 result ->
-            val map = result.toMap()[name] as? Map<*, *>
+            val map = result.toMap()[collection.name] as? Map<*, *>
             if (map != null) {
                 val mutableMap = map.toMutableMap()
-                mutableMap.remove(type)
                 val json = gson.toJson(mutableMap)
                 val element = gson.fromJson<T>(json)
 
@@ -235,7 +241,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                         field ->
                     val fieldName = field.name
                     field.isAccessible = true
-                    (result.getValue(name) as? Dictionary)?.getBlob(fieldName)?.let {
+                    (result.getValue(collection.name) as? Dictionary)?.getBlob(fieldName)?.let {
                         field.set(element, it.content)
                     }
                 }
@@ -247,21 +253,21 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     }
 
     inline fun <reified T>get(filter: Map<String, Any>): List<T> {
+        val collection = collection<T>()
         val classType = T::class.java
-        val startingExpression = Expression.property(type).equalTo(Expression.string(typeOf<T>().simpleName))
+        val startingExpression = Expression.all()
         val whereExpression = filter.whereExpression(startingExpression)
         val query = QueryBuilder.select(SelectResult.all())
-                .from(DataSource.database(database))
+                .from(DataSource.collection(collection))
                 .where(whereExpression)
 
         val list = mutableListOf<T>()
         val rs = query.execute()
         rs.map {
             result ->
-            val map = result.toMap()[name] as? Map<*, *>
+            val map = result.toMap()[collection.name] as? Map<*, *>
             if (map != null) {
                 val mutableMap = map.toMutableMap()
-                mutableMap.remove(type)
                 val json = gson.toJson(mutableMap)
                 val element = gson.fromJson<T>(json)
 
@@ -271,7 +277,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                         field ->
                     val fieldName = field.name
                     field.isAccessible = true
-                    (result.getValue(name) as? Dictionary)?.getBlob(fieldName)?.let {
+                    (result.getValue(collection.name) as? Dictionary)?.getBlob(fieldName)?.let {
                         field.set(element, it.content)
                     }
                 }
@@ -283,20 +289,20 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     }
 
     inline fun <reified T>get(expression: Expression): List<T> {
+        val collection = collection<T>()
         val classType = T::class.java
-        val startingExpression = Expression.property(type).equalTo(Expression.string(typeOf<T>().simpleName))
+        val startingExpression = Expression.all()
         val query = QueryBuilder.select(SelectResult.all())
-            .from(DataSource.database(database))
+            .from(DataSource.collection(collection))
             .where(startingExpression.and(expression))
 
         val list = mutableListOf<T>()
         val rs = query.execute()
         rs.map {
                 result ->
-            val map = result.toMap()[name] as? Map<*, *>
+            val map = result.toMap()[collection.name] as? Map<*, *>
             if (map != null) {
                 val mutableMap = map.toMutableMap()
-                mutableMap.remove(type)
                 val json = gson.toJson(mutableMap)
                 val element = gson.fromJson<T>(json)
 
@@ -306,7 +312,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                         field ->
                     val fieldName = field.name
                     field.isAccessible = true
-                    (result.getValue(name) as? Dictionary)?.getBlob(fieldName)?.let {
+                    (result.getValue(collection.name) as? Dictionary)?.getBlob(fieldName)?.let {
                         field.set(element, it.content)
                     }
                 }
@@ -318,10 +324,11 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     }
 
     inline fun <reified T>get(expression: Expression, vararg orderings: Ordering): List<T> {
+        val collection = collection<T>()
         val classType = T::class.java
-        val startingExpression = Expression.property(type).equalTo(Expression.string(typeOf<T>().simpleName))
+        val startingExpression = Expression.all()
         val query = QueryBuilder.select(SelectResult.all())
-            .from(DataSource.database(database))
+            .from(DataSource.collection(collection))
             .where(startingExpression.and(expression))
             .orderBy(*orderings)
 
@@ -329,10 +336,9 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         val rs = query.execute()
         rs.map {
                 result ->
-            val map = result.toMap()[name] as? Map<*, *>
+            val map = result.toMap()[collection.name] as? Map<*, *>
             if (map != null) {
                 val mutableMap = map.toMutableMap()
-                mutableMap.remove(type)
                 val json = gson.toJson(mutableMap)
                 val element = gson.fromJson<T>(json)
 
@@ -342,7 +348,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                         field ->
                     val fieldName = field.name
                     field.isAccessible = true
-                    (result.getValue(name) as? Dictionary)?.getBlob(fieldName)?.let {
+                    (result.getValue(collection.name) as? Dictionary)?.getBlob(fieldName)?.let {
                         field.set(element, it.content)
                     }
                 }
@@ -354,12 +360,13 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     }
 
     inline fun <reified T>get(buildQuery: AdvancedQuery.() -> Unit): List<T> {
+        val collection = collection<T>()
         val classType = T::class.java
-        val startingExpression = Expression.property(type).equalTo(Expression.string(typeOf<T>().simpleName))
+        val startingExpression = Expression.all()
         val advancedQuery = AdvancedQuery()
         advancedQuery.buildQuery()
         var query: Query = QueryBuilder.select(SelectResult.all())
-            .from(DataSource.database(database))
+            .from(DataSource.collection(collection))
 
         query = if (advancedQuery.expression != null) {
             (query as From).where(startingExpression.and(advancedQuery.expression!!))
@@ -389,10 +396,9 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         val rs = query.execute()
         rs.map {
                 result ->
-            val map = result.toMap()[name] as? Map<*, *>
+            val map = result.toMap()[collection.name] as? Map<*, *>
             if (map != null) {
                 val mutableMap = map.toMutableMap()
-                mutableMap.remove(type)
                 val json = gson.toJson(mutableMap)
                 val element = gson.fromJson<T>(json)
 
@@ -402,7 +408,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                         field ->
                     val fieldName = field.name
                     field.isAccessible = true
-                    (result.getValue(name) as? Dictionary)?.getBlob(fieldName)?.let {
+                    (result.getValue(collection.name) as? Dictionary)?.getBlob(fieldName)?.let {
                         field.set(element, it.content)
                     }
                 }
@@ -414,38 +420,36 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     }
 
     inline fun <reified T>delete() {
-        val classType = T::class.java
         val query = QueryBuilder.select(
                 SelectResult.expression(Meta.id))
-                .from(DataSource.database(database))
-                .where(Expression.property(type).equalTo(Expression.string(typeOf<T>().simpleName)))
+                .from(DataSource.collection(collection<T>()))
 
-        database.inBatch {
+        database.inBatch<Exception> {
             query.execute().map {
                     result ->
                 val id = result.getString(0)
                 if (id != null) {
 //                val doc = database.getDocument(id)
-                    database.purge(id)
+                    collection<T>().purge(id)
                 }
             }
         }
     }
 
     inline fun <reified T>delete(filter: Map<String, Any>) {
-        val startingExpression = Expression.property(type).equalTo(Expression.string(typeOf<T>().simpleName))
+        val startingExpression = Expression.all()
         val whereExpression = filter.whereExpression(startingExpression)
         val query = QueryBuilder.select(SelectResult.expression(Meta.id))
-                .from(DataSource.database(database))
+                .from(DataSource.collection(collection<T>()))
                 .where(whereExpression)
 
-        database.inBatch {
+        database.inBatch<Exception> {
             query.execute().map {
                     result ->
                 val id = result.getString(0)
                 if (id != null) {
 //                    val doc = database.getDocument(id)
-                    database.purge(id)
+                    collection<T>().purge(id)
                 }
             }
         }
@@ -457,32 +461,32 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         val field = classType.getDeclaredField(primaryLabel)
         field.isAccessible = true
         val elementId = field.get(element)
-        val document = database.getDocument("$elementId-${typeOf<T>().simpleName}")
-        if (document != null && document.getString(type) == typeOf<T>().simpleName) {
-            database.purge(document)
+        val document = collection<T>().getDocument("$elementId-${typeOf<T>().simpleName}")
+        if (document != null) {
+            collection<T>().purge(document)
 //            database.delete(document)
         }
     }
 
     inline fun <reified T: PrimaryKey>delete(elements: List<T>) {
-        database.inBatch {
+        database.inBatch<Exception> {
             elements.forEach { delete(it) }
         }
     }
 
     inline fun <reified T>delete(expression: Expression) {
-        val startingExpression = Expression.property(type).equalTo(Expression.string(typeOf<T>().simpleName))
+        val startingExpression = Expression.all()
         val query = QueryBuilder.select(SelectResult.expression(Meta.id))
-            .from(DataSource.database(database))
+            .from(DataSource.collection(collection<T>()))
             .where(startingExpression.and(expression))
 
-        database.inBatch {
+        database.inBatch<Exception> {
             query.execute().map {
                     result ->
                 val id = result.getString(0)
                 if (id != null) {
 //                    val doc = database.getDocument(id)
-                    database.purge(id)
+                    collection<T>().purge(id)
                 }
             }
         }
@@ -493,7 +497,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
             .from(DataSource.database(database))
             .where(Meta.deleted)
 
-        database.inBatch {
+        database.inBatch<Exception> {
             query.execute().map {
                     result ->
                 val id = result.getString(0)
@@ -506,10 +510,8 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     // Live
     inline fun <reified T>live(crossinline closure: (List<T>) -> Unit): LiveQuery {
-        val classType = T::class.java
         val query = QueryBuilder.select(SelectResult.all())
-            .from(DataSource.database(database))
-            .where(Expression.property(type).equalTo(Expression.string(typeOf<T>().simpleName)))
+            .from(DataSource.collection(collection<T>()))
 
         val token = query.addChangeListener { change ->
             try {
@@ -521,7 +523,6 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                         if (map != null) {
                             try {
                                 val mutableMap = map.toMutableMap()
-                                mutableMap.remove(type)
                                 val json = gson.toJson(mutableMap)
                                 val element = gson.fromJson<T>(json)
                                 list.add(element)
@@ -543,10 +544,9 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     }
 
     inline fun <reified T>live(vararg orderings: Ordering, crossinline closure: (List<T>) -> Unit): LiveQuery {
-        val classType = T::class.java
+        val collection = collection<T>()
         val query = QueryBuilder.select(SelectResult.all())
-            .from(DataSource.database(database))
-            .where(Expression.property(type).equalTo(Expression.string(typeOf<T>().simpleName)))
+            .from(DataSource.collection(collection))
             .orderBy(*orderings)
 
         val token = query.addChangeListener { change ->
@@ -555,11 +555,10 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                     val list = mutableListOf<T>()
                     change.results?.map {
                             result ->
-                        val map = result.toMap()[name] as? Map<*, *>
+                        val map = result.toMap()[collection.name] as? Map<*, *>
                         if (map != null) {
                             try {
                                 val mutableMap = map.toMutableMap()
-                                mutableMap.remove(type)
                                 val json = gson.toJson(mutableMap)
                                 val element = gson.fromJson<T>(json)
                                 list.add(element)
@@ -581,10 +580,10 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     }
 
     inline fun <reified T>live(expression: Expression, vararg orderings: Ordering, crossinline closure: (List<T>) -> Unit): LiveQuery {
-        val classType = T::class.java
-        val startingExpression = Expression.property(type).equalTo(Expression.string(typeOf<T>().simpleName))
+        val collection = collection<T>()
+        val startingExpression = Expression.all()
         val query = QueryBuilder.select(SelectResult.all())
-            .from(DataSource.database(database))
+            .from(DataSource.collection(collection))
             .where(startingExpression.and(expression))
             .orderBy(*orderings)
 
@@ -594,11 +593,10 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                     val list = mutableListOf<T>()
                     change.results?.map {
                             result ->
-                        val map = result.toMap()[name] as? Map<*, *>
+                        val map = result.toMap()[collection.name] as? Map<*, *>
                         if (map != null) {
                             try {
                                 val mutableMap = map.toMutableMap()
-                                mutableMap.remove(type)
                                 val json = gson.toJson(mutableMap)
                                 val element = gson.fromJson<T>(json)
                                 list.add(element)
@@ -620,13 +618,13 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     }
 
     inline fun <reified T>live(buildQuery: AdvancedQuery.() -> Unit, crossinline closure: (List<T>) -> Unit): LiveQuery {
-        val classType = T::class.java
-        val startingExpression = Expression.property(type).equalTo(Expression.string(typeOf<T>().simpleName))
+        val collection = collection<T>()
+        val startingExpression = Expression.all()
 
         val advancedQuery = AdvancedQuery()
         advancedQuery.buildQuery()
         var query: Query = QueryBuilder.select(SelectResult.all())
-            .from(DataSource.database(database))
+            .from(DataSource.collection(collection))
 
         query = if (advancedQuery.expression != null) {
             (query as From).where(startingExpression.and(advancedQuery.expression!!))
@@ -658,11 +656,10 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                     val list = mutableListOf<T>()
                     change.results?.map {
                             result ->
-                        val map = result.toMap()[name] as? Map<*, *>
+                        val map = result.toMap()[collection.name] as? Map<*, *>
                         if (map != null) {
                             try {
                                 val mutableMap = map.toMutableMap()
-                                mutableMap.remove(type)
                                 val json = gson.toJson(mutableMap)
                                 val element = gson.fromJson<T>(json)
                                 list.add(element)
@@ -685,38 +682,39 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     // Blobs
     fun saveByteArray(id: String, collectionName: String, byteArray: ByteArray) {
+        val collection = database.getCollection(collectionName) ?: database.createCollection(collectionName)
         val mutableDocument = MutableDocument(id)
         val blob = Blob("image/jpeg", byteArray)
-        mutableDocument.setString(type, collectionName)
         mutableDocument.setBlob("blob", blob)
-        database.save(mutableDocument)
+        collection.save(mutableDocument)
     }
 
     fun blobsCount(collectionName: String): Int {
+        val collection = database.getCollection(collectionName) ?: database.createCollection(collectionName)
         val query = QueryBuilder.select(SelectResult.all())
-            .from(DataSource.database(database))
-            .where(Expression.property(type).equalTo(Expression.string(collectionName)))
+            .from(DataSource.collection(collection))
         val rs = query.execute()
         return rs.allResults().size
     }
 
-    fun readReadByteArray(id: String): ByteArray? {
-        val mutableDocument = database.getDocument(id)
-        return mutableDocument.getBlob("blob")?.content
+    fun readReadByteArray(id: String, collectionName: String): ByteArray? {
+        val collection = database.getCollection(collectionName) ?: database.createCollection(collectionName)
+        val mutableDocument = collection.getDocument(id)
+        return mutableDocument?.getBlob("blob")?.content
     }
 
     fun deleteByteArray(collectionName: String) {
+        val collection = database.getCollection(collectionName) ?: database.createCollection(collectionName)
         val query = QueryBuilder.select(SelectResult.expression(Meta.id))
-            .from(DataSource.database(database))
-            .where(Expression.property(type).equalTo(Expression.string(collectionName)))
+            .from(DataSource.collection(collection))
         val rs = query.execute()
         rs.allResults().forEach {
                 result ->
             val id = result.getString(0)
             if (id != null) {
-                val doc = database.getDocument(id)
+                val doc = collection.getDocument(id)
                 if (doc != null) {
-                    database.delete(doc)
+                    collection.delete(doc)
                 }
             }
         }
@@ -724,8 +722,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     // Fulltext
     inline fun <reified T>fulltextIndex(vararg values: String) {
-        val classType = T::class.java
-        database.createIndex(
+        collection<T>().createIndex(
             "${typeOf<T>()}-index",
             IndexBuilder.fullTextIndex(*(values.map {
                 FullTextIndexItem.property(it)
@@ -733,21 +730,21 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     }
 
     inline fun <reified T>search(text: String): List<T> {
+        val collection = collection<T>()
         val classType = T::class.java
         val query = QueryBuilder.select(SelectResult.all())
-            .from(DataSource.database(database))
-            .where(Expression.property(type).equalTo(Expression.string(typeOf<T>().simpleName))
-                .and(FullTextExpression.index("${typeOf<T>()}-index").match(text))
+            .from(DataSource.collection(collection))
+            .where(Expression.all()
+                .and(FullTextFunction.match(Expression.fullTextIndex("${typeOf<T>()}-index"), text))
             )
 
         val list = mutableListOf<T>()
         val rs = query.execute()
         rs.forEach {
                 result ->
-            val map = result.toMap()[name] as? Map<*, *>
+            val map = result.toMap()[collection.name] as? Map<*, *>
             if (map != null) {
                 val mutableMap = map.toMutableMap()
-                mutableMap.remove(type)
                 val json = gson.toJson(mutableMap)
                 val element = gson.fromJson<T>(json)
 
@@ -757,7 +754,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                         field ->
                     val fieldName = field.name
                     field.isAccessible = true
-                    (result.getValue(name) as? Dictionary)?.getBlob(fieldName)?.let {
+                    (result.getValue(collection.name) as? Dictionary)?.getBlob(fieldName)?.let {
                         field.set(element, it.content)
                     }
                 }
@@ -769,15 +766,16 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     }
 
     inline fun <reified T>search(text: String, buildQuery: AdvancedQuery.() -> Unit): List<T> {
+        val collection = collection<T>()
         val classType = T::class.java
         val startingExpression =
-            Expression.property(type).equalTo(Expression.string(typeOf<T>().simpleName))
-                .and(FullTextExpression.index("${typeOf<T>()}-index").match(text))
+            Expression.all()
+                .and(FullTextFunction.match(Expression.fullTextIndex("${typeOf<T>()}-index"), text))
 
         val advancedQuery = AdvancedQuery()
         advancedQuery.buildQuery()
         var query: Query = QueryBuilder.select(SelectResult.all())
-            .from(DataSource.database(database))
+            .from(DataSource.collection(collection))
 
         query = if (advancedQuery.expression != null) {
             (query as From).where(startingExpression.and(advancedQuery.expression!!))
@@ -807,10 +805,9 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         val rs = query.execute()
         rs.forEach {
                 result ->
-            val map = result.toMap()[name] as? Map<*, *>
+            val map = result.toMap()[collection.name] as? Map<*, *>
             if (map != null) {
                 val mutableMap = map.toMutableMap()
-                mutableMap.remove(type)
                 val json = gson.toJson(mutableMap)
                 val element = gson.fromJson<T>(json)
 
@@ -820,7 +817,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                         field ->
                     val fieldName = field.name
                     field.isAccessible = true
-                    (result.getValue(name) as? Dictionary)?.getBlob(fieldName)?.let {
+                    (result.getValue(collection.name) as? Dictionary)?.getBlob(fieldName)?.let {
                         field.set(element, it.content)
                     }
                 }

@@ -43,6 +43,7 @@ class MainActivity : AppCompatActivity() {
 
             database.suspending.insertOrUpdate(teacher)
             var teachers = database.suspending.get<Teacher>()
+            println(teachers)
             database.insertOrUpdate(teacherNull)
 
             teachers = database.suspending.get<Teacher>()

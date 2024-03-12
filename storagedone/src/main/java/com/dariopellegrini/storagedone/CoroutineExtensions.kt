@@ -164,7 +164,7 @@ suspend inline fun Wrapper<StorageDoneDatabase>.clear() {
 @FlowPreview
 inline fun <reified T>Wrapper<StorageDoneDatabase>.live() = callbackFlow {
         val query = base.live<T> {
-            offer(it)
+            trySend(it)
         }
         awaitClose {
             query.cancel()
@@ -175,7 +175,7 @@ inline fun <reified T>Wrapper<StorageDoneDatabase>.live() = callbackFlow {
 @FlowPreview
 inline fun <reified T>Wrapper<StorageDoneDatabase>.live(vararg orderings: Ordering) = callbackFlow {
     val query = base.live<T>(*orderings) {
-        offer(it)
+        trySend(it)
     }
     awaitClose {
         query.cancel()
@@ -187,7 +187,7 @@ inline fun <reified T>Wrapper<StorageDoneDatabase>.live(vararg orderings: Orderi
 @FlowPreview
 inline fun <reified T>Wrapper<StorageDoneDatabase>.live(expression: Expression, vararg orderings: Ordering) = callbackFlow {
     val query = base.live<T>(expression, *orderings) {
-        offer(it)
+        trySend(it)
     }
     awaitClose {
         query.cancel()
@@ -198,7 +198,7 @@ inline fun <reified T>Wrapper<StorageDoneDatabase>.live(expression: Expression, 
 @FlowPreview
 inline fun <reified T>Wrapper<StorageDoneDatabase>.live(crossinline buildQuery: AdvancedQuery.() -> Unit) = callbackFlow {
     val query = base.live<T>(buildQuery) {
-        offer(it)
+        trySend(it)
     }
     awaitClose {
         query.cancel()
