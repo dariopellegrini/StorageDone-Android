@@ -37,7 +37,7 @@ dependencies {
 
     api 'com.couchbase.lite:couchbase-lite-android-ktx:3.2.4'
     api 'com.google.code.gson:gson:2.10.1'
-    api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2'
-    api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2'
+    api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
     api "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 }

@@ -1,8 +1,6 @@
 package com.dariopellegrini.storagedone
 
-import android.text.Editable
-import android.text.TextWatcher
-import android.widget.EditText
+
 import com.couchbase.lite.Expression
 import com.couchbase.lite.Ordering
 import com.dariopellegrini.storagedone.query.AdvancedQuery
