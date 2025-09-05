@@ -4,7 +4,6 @@ apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 35
-
     defaultConfig {
         minSdkVersion 22
         targetSdkVersion 35
@@ -39,6 +38,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     api 'com.couchbase.lite:couchbase-lite-android-ktx:3.2.4'
     api 'com.google.code.gson:gson:2.10.1'
+
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
     api "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
