@@ -37,7 +37,6 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-
     api 'com.couchbase.lite:couchbase-lite-android-ktx:3.2.4'
     api 'com.google.code.gson:gson:2.10.1'
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
