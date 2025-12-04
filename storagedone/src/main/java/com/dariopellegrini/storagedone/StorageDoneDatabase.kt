@@ -519,10 +519,10 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                     val list = mutableListOf<T>()
                     change.results?.let { rs ->
                         rs.forEach { result ->
-                            val map = result.toMap()[name] as? Map<*, *>
+                            val map = result.toMap()[typeOf<T>().simpleName]
                             if (map != null) {
                                 try {
-                                    val mutableMap = map.toMutableMap()
+                                    val mutableMap = map
                                     val json = gson.toJson(mutableMap)
                                     val element = gson.fromJson<T>(json)
                                     list.add(element)
@@ -556,7 +556,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                     val list = mutableListOf<T>()
                     change.results?.let { rs ->
                         rs.forEach { result ->
-                            val map = result.toMap()[name] as? Map<*, *>
+                            val map = result.toMap()[typeOf<T>().simpleName] as? Map<*, *>
                             if (map != null) {
                                 try {
                                     val mutableMap = map.toMutableMap()
@@ -595,7 +595,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                     val list = mutableListOf<T>()
                     change.results?.let { rs ->
                         rs.forEach { result ->
-                            val map = result.toMap()[name] as? Map<*, *>
+                            val map = result.toMap()[typeOf<T>().simpleName] as? Map<*, *>
                             if (map != null) {
                                 try {
                                     val mutableMap = map.toMutableMap()
@@ -659,7 +659,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                     val list = mutableListOf<T>()
                     change.results?.let { rs ->
                         rs.forEach { result ->
-                            val map = result.toMap()[name] as? Map<*, *>
+                            val map = result.toMap()[typeOf<T>().simpleName] as? Map<*, *>
                             if (map != null) {
                                 try {
                                     val mutableMap = map.toMutableMap()
