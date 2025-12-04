@@ -510,10 +510,11 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     // Live
     inline fun <reified T>live(crossinline closure: (List<T>) -> Unit): LiveQuery {
-        val query = QueryBuilder.select(SelectResult.all())
-            .from(DataSource.collection(collection<T>()))
+
+        val query = QueryBuilder.select(SelectResult.all()).from(DataSource.collection(collection<T>()))
 
         val token = query.addChangeListener { change ->
+
             try {
                 CoroutineScope(Dispatchers.Default).launch {
                     val list = mutableListOf<T>()
