@@ -4,11 +4,11 @@ apply plugin: 'kotlin-android'
 
 android {
 
-    compileSdkVersion 35
+    compileSdkVersion 36
     defaultConfig {
         applicationId "com.dariopellegrini.storagedoneapp"
-        minSdkVersion 22
-        targetSdkVersion 35
+        minSdkVersion 24
+        targetSdkVersion 36
         versionCode 1
         versionName "1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
