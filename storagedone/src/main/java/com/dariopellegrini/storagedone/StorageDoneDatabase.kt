@@ -839,6 +839,6 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     }
 
     inline fun <reified T>getTypeName(): String {
-        return typeOf<T>().simpleName.replace("<", "___").replace(">", "___")
+        return typeOf<T>().simpleName.replace("<", "_").replace(">", "_")
     }
 }

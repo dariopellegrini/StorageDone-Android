@@ -3,6 +3,7 @@ package com.dariopellegrini.storagedoneapp
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
 import com.couchbase.lite.*
 import com.dariopellegrini.storagedone.*
 import com.dariopellegrini.storagedone.query.*
@@ -61,8 +62,8 @@ class MainActivity : AppCompatActivity() {
 //            database.suspending.upsert(teacher1)
 //
             val job = CoroutineScope(Dispatchers.IO).launch {
-                database.suspending.live<Teacher>().onEach {
-                    Log.i("Flow", "${it.map { it.id }}")
+                database.suspending.live<Shoe<Teacher>>().onEach {
+                    Log.i("Flow", "${it}")
                 }.launchIn(this)
             }
 
@@ -84,6 +85,11 @@ class MainActivity : AppCompatActivity() {
 
             val teacher5 = Teacher("a5", "Silvia", "B", 30, "https://cv.com/silviab")
             database.suspending.upsert(teacher5)
+
+            findViewById<Button>(R.id.addButton2).setOnClickListener {
+                val teacher2 = Teacher("a${(0..1000).random()}", "Silviaa", "B", 30, "https://cv.com/silviab")
+                database.insertOrUpdate(Shoe(teacher2.id, teacher))
+            }
 //
 //            val teachers = database.suspending.get<Teacher>()
 //
@@ -197,3 +203,5 @@ data class Followed<T: Any>(val id: Int, val value: T, var followed: Boolean): P
         return "id"
     }
 }
+
+data class Shoe<T>(val id: String, val element: T)
