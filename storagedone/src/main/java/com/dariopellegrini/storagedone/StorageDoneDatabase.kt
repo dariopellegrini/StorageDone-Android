@@ -40,9 +40,9 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         .create()
 
     inline fun <reified T>collection(): Collection {
-        val collection = database.getCollection(typeOf<T>().simpleName) ?: database.createCollection(typeOf<T>().simpleName).apply {
+        val collection = database.getCollection(getTypeName<T>()) ?: database.createCollection(getTypeName<T>()).apply {
             createIndex(
-                "${typeOf<T>().simpleName}-idIndex",
+                "${getTypeName<T>()}-idIndex",
                 IndexBuilder.valueIndex(
                     ValueIndexItem.property("id")
                 )
@@ -53,7 +53,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     inline fun <reified T>insertOrUpdate(element: T, useExistingValuesAsFallback: Boolean = false) {
         val classType = T::class.java
-        val typeName = typeOf<T>().simpleName
+        val typeName = getTypeName<T>()
         val map = gson.toJSONMap(element).toMutableMap()
 
         val mutableDoc = when(element) {
@@ -461,7 +461,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         val field = classType.getDeclaredField(primaryLabel)
         field.isAccessible = true
         val elementId = field.get(element)
-        val document = collection<T>().getDocument("$elementId-${typeOf<T>().simpleName}")
+        val document = collection<T>().getDocument("$elementId-${getTypeName<T>()}")
         if (document != null) {
             collection<T>().purge(document)
 //            database.delete(document)
@@ -520,7 +520,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                     val list = mutableListOf<T>()
                     change.results?.let { rs ->
                         rs.forEach { result ->
-                            val map = result.toMap()[typeOf<T>().simpleName]
+                            val map = result.toMap()[getTypeName<T>()]
                             if (map != null) {
                                 try {
                                     val mutableMap = map
@@ -557,7 +557,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                     val list = mutableListOf<T>()
                     change.results?.let { rs ->
                         rs.forEach { result ->
-                            val map = result.toMap()[typeOf<T>().simpleName] as? Map<*, *>
+                            val map = result.toMap()[getTypeName<T>()] as? Map<*, *>
                             if (map != null) {
                                 try {
                                     val mutableMap = map.toMutableMap()
@@ -596,7 +596,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                     val list = mutableListOf<T>()
                     change.results?.let { rs ->
                         rs.forEach { result ->
-                            val map = result.toMap()[typeOf<T>().simpleName] as? Map<*, *>
+                            val map = result.toMap()[getTypeName<T>()] as? Map<*, *>
                             if (map != null) {
                                 try {
                                     val mutableMap = map.toMutableMap()
@@ -660,7 +660,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
                     val list = mutableListOf<T>()
                     change.results?.let { rs ->
                         rs.forEach { result ->
-                            val map = result.toMap()[typeOf<T>().simpleName] as? Map<*, *>
+                            val map = result.toMap()[getTypeName<T>()] as? Map<*, *>
                             if (map != null) {
                                 try {
                                     val mutableMap = map.toMutableMap()
@@ -836,5 +836,9 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     fun clear() {
         database.delete()
         database = Database(name, config)
+    }
+
+    inline fun <reified T>getTypeName(): String {
+        return typeOf<T>().simpleName.replace("<", "___").replace(">", "___")
     }
 }
