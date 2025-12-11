@@ -1,18 +1,21 @@
 package com.dariopellegrini.storagedone
 
 import com.couchbase.lite.DataSource
+import com.couchbase.lite.Database
+import com.couchbase.lite.DatabaseConfiguration
 import com.couchbase.lite.Dictionary
 import com.couchbase.lite.Expression
 import com.couchbase.lite.QueryBuilder
 import com.couchbase.lite.SelectResult
 import kotlin.reflect.typeOf
 
-inline fun <reified T>StorageDoneDatabase.migrateToRelease(deleteAfterMigration: Boolean = false) {
+inline fun <reified T>StorageDoneDatabase.migrateToRelease(oldDatabaseName: String, deleteAfterMigration: Boolean = false) {
     val classType = T::class.java
     val typeName = typeOf<T>().simpleName
 
+    val oldDatabase = Database(oldDatabaseName, DatabaseConfiguration())
     val query = QueryBuilder.select(SelectResult.all())
-        .from(DataSource.database(database))
+        .from(DataSource.database(oldDatabase))
         .where(Expression.property(type).equalTo(Expression.string(typeName)))
 
     val list = mutableListOf<T>()
@@ -20,7 +23,7 @@ inline fun <reified T>StorageDoneDatabase.migrateToRelease(deleteAfterMigration:
     val deleteIds = mutableListOf<String>()
     rs.forEach {
             result ->
-        val map = result.toMap()[name] as? Map<*, *>
+        val map = result.toMap()[oldDatabaseName] as? Map<*, *>
         if (map != null) {
             val mutableMap = map.toMutableMap()
             mutableMap.remove(type)
@@ -33,7 +36,7 @@ inline fun <reified T>StorageDoneDatabase.migrateToRelease(deleteAfterMigration:
                     field ->
                 val fieldName = field.name
                 field.isAccessible = true
-                (result.getValue(name) as? Dictionary)?.getBlob(fieldName)?.let {
+                (result.getValue(oldDatabaseName) as? Dictionary)?.getBlob(fieldName)?.let {
                     field.set(element, it.content)
                 }
             }
@@ -46,10 +49,12 @@ inline fun <reified T>StorageDoneDatabase.migrateToRelease(deleteAfterMigration:
     insertOrUpdate(list)
 
     if (deleteAfterMigration) {
-        database.inBatch<Exception> {
+        oldDatabase.inBatch<Exception> {
             deleteIds.forEach {
-                database.purge(it)
+                oldDatabase.purge(it)
             }
         }
     }
+
+    oldDatabase.close()
 }
