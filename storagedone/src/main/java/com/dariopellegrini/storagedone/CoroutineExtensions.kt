@@ -104,11 +104,11 @@ suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.get(vararg orderings:
         base.get<T>(*orderings)
     }
 }
-suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.get(filter: Map<String, Any>): List<T> {
-    return withContext(Dispatchers.IO) {
-        base.get<T>(filter)
-    }
-}
+//suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.get(filter: Map<String, Any>): List<T> {
+//    return withContext(Dispatchers.IO) {
+//        base.get<T>(filter)
+//    }
+//}
 suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.get(expression: Expression, vararg orderings: Ordering): List<T> {
     return withContext(Dispatchers.IO) {
         base.get<T>(expression, *orderings)
@@ -124,11 +124,11 @@ suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.delete() {
         base.delete<T>()
     }
 }
-suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.delete(filter: Map<String, Any>) {
-    withContext(Dispatchers.IO) {
-        base.delete<T>(filter)
-    }
-}
+//suspend inline fun <reified T>Wrapper<StorageDoneDatabase>.delete(filter: Map<String, Any>) {
+//    withContext(Dispatchers.IO) {
+//        base.delete<T>(filter)
+//    }
+//}
 suspend inline fun <reified T: PrimaryKey>Wrapper<StorageDoneDatabase>.delete(element: T) {
     withContext(Dispatchers.IO) {
         base.delete(element)

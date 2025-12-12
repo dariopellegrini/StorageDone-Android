@@ -18,14 +18,14 @@ inline infix fun <reified T>StorageDoneDatabase.insertInto(list: MutableList<T>)
         Log.e("StorageDone", e.localizedMessage ?: "")
     }
 }
-inline infix fun <reified T>StorageDoneDatabase.filter(filter: Map<String, Any>): List<T> {
-    return try {
-        this.get(filter)
-    } catch (e: Exception) {
-        Log.e("StorageDone", e.localizedMessage ?: "")
-        emptyList()
-    }
-}
+//inline infix fun <reified T>StorageDoneDatabase.filter(filter: Map<String, Any>): List<T> {
+//    return try {
+//        this.get(filter)
+//    } catch (e: Exception) {
+//        Log.e("StorageDone", e.localizedMessage ?: "")
+//        emptyList()
+//    }
+//}
 inline infix fun <reified T>StorageDoneDatabase.filter(expression: Expression): List<T> {
     return try {
         this.get(expression)

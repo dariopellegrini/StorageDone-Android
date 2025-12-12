@@ -110,9 +110,11 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         collection<T>().save(mutableDoc)
     }
 
+
     inline fun <reified T>insertOrUpdate(elements: List<T>, useExistingValuesAsFallback: Boolean = false) {
         database.inBatch<Exception> {
             elements.forEach {
+
                 insertOrUpdate(it, useExistingValuesAsFallback)
             }
         }
@@ -250,49 +252,48 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         return list
     }
 
-    inline fun <reified T>get(filter: Map<String, Any>): List<T> {
-        val collection = collection<T>()
-        val classType = T::class.java
-        val startingExpression = Expression.all()
-        val whereExpression = filter.whereExpression(startingExpression)
-        val query = QueryBuilder.select(SelectResult.all())
-                .from(DataSource.collection(collection))
-                .where(whereExpression)
-
-        val list = mutableListOf<T>()
-        val rs = query.execute()
-        rs.map {
-            result ->
-            val map = result.toMap()[collection.name] as? Map<*, *>
-            if (map != null) {
-                val mutableMap = map.toMutableMap()
-                val json = gson.toJson(mutableMap)
-                val element = gson.fromJson<T>(json)
-
-                classType.declaredFields.filter {
-                    it.type == ByteArray::class.java
-                }.forEach {
-                        field ->
-                    val fieldName = field.name
-                    field.isAccessible = true
-                    (result.getValue(collection.name) as? Dictionary)?.getBlob(fieldName)?.let {
-                        field.set(element, it.content)
-                    }
-                }
-
-                list.add(element)
-            }
-        }
-        return list
-    }
+//    inline fun <reified T>get(filter: Map<String, Any>): List<T> {
+//        val collection = collection<T>()
+//        val classType = T::class.java
+//        val whereExpression = filter.whereExpression()
+//        val query = QueryBuilder.select(SelectResult.all())
+//                .from(DataSource.collection(collection))
+//            .where(whereExpression!!)
+//
+//        val list = mutableListOf<T>()
+//        val rs = query.execute()
+//        rs.map {
+//            result ->
+//            val map = result.toMap()[collection.name] as? Map<*, *>
+//            if (map != null) {
+//                val mutableMap = map.toMutableMap()
+//                val json = gson.toJson(mutableMap)
+//                val element = gson.fromJson<T>(json)
+//
+//                classType.declaredFields.filter {
+//                    it.type == ByteArray::class.java
+//                }.forEach {
+//                        field ->
+//                    val fieldName = field.name
+//                    field.isAccessible = true
+//                    (result.getValue(collection.name) as? Dictionary)?.getBlob(fieldName)?.let {
+//                        field.set(element, it.content)
+//                    }
+//                }
+//
+//                list.add(element)
+//            }
+//        }
+//        return list
+//    }
 
     inline fun <reified T>get(expression: Expression): List<T> {
         val collection = collection<T>()
         val classType = T::class.java
-        val startingExpression = Expression.all()
+
         val query = QueryBuilder.select(SelectResult.all())
             .from(DataSource.collection(collection))
-            .where(startingExpression.and(expression))
+            .where(expression)
 
         val list = mutableListOf<T>()
         val rs = query.execute()
@@ -324,10 +325,9 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     inline fun <reified T>get(expression: Expression, vararg orderings: Ordering): List<T> {
         val collection = collection<T>()
         val classType = T::class.java
-        val startingExpression = Expression.all()
         val query = QueryBuilder.select(SelectResult.all())
             .from(DataSource.collection(collection))
-            .where(startingExpression.and(expression))
+            .where(expression)
             .orderBy(*orderings)
 
         val list = mutableListOf<T>()
@@ -360,7 +360,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     inline fun <reified T>get(buildQuery: AdvancedQuery.() -> Unit): List<T> {
         val collection = collection<T>()
         val classType = T::class.java
-        val startingExpression = Expression.all()
+        val startingExpression = Expression.booleanValue(true)
         val advancedQuery = AdvancedQuery()
         advancedQuery.buildQuery()
         var query: Query = QueryBuilder.select(SelectResult.all())
@@ -434,24 +434,23 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         }
     }
 
-    inline fun <reified T>delete(filter: Map<String, Any>) {
-        val startingExpression = Expression.all()
-        val whereExpression = filter.whereExpression(startingExpression)
-        val query = QueryBuilder.select(SelectResult.expression(Meta.id))
-                .from(DataSource.collection(collection<T>()))
-                .where(whereExpression)
-
-        database.inBatch<Exception> {
-            query.execute().map {
-                    result ->
-                val id = result.getString(0)
-                if (id != null) {
-//                    val doc = database.getDocument(id)
-                    collection<T>().purge(id)
-                }
-            }
-        }
-    }
+//    inline fun <reified T>delete(filter: Map<String, Any>) {
+//        val whereExpression = filter.whereExpression()
+//        val query = QueryBuilder.select(SelectResult.expression(Meta.id))
+//                .from(DataSource.collection(collection<T>()))
+//                .where(whereExpression ?: Expression.booleanValue(true))
+//
+//        database.inBatch<Exception> {
+//            query.execute().map {
+//                    result ->
+//                val id = result.getString(0)
+//                if (id != null) {
+////                    val doc = database.getDocument(id)
+//                    collection<T>().purge(id)
+//                }
+//            }
+//        }
+//    }
 
     inline fun <reified T: PrimaryKey>delete(element: T) {
         val classType = T::class.java
@@ -473,10 +472,9 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     }
 
     inline fun <reified T>delete(expression: Expression) {
-        val startingExpression = Expression.all()
         val query = QueryBuilder.select(SelectResult.expression(Meta.id))
             .from(DataSource.collection(collection<T>()))
-            .where(startingExpression.and(expression))
+            .where(expression)
 
         database.inBatch<Exception> {
             query.execute().map {
@@ -582,10 +580,9 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     inline fun <reified T>live(expression: Expression, vararg orderings: Ordering, crossinline closure: (List<T>) -> Unit): LiveQuery {
         val collection = collection<T>()
-        val startingExpression = Expression.all()
         val query = QueryBuilder.select(SelectResult.all())
             .from(DataSource.collection(collection))
-            .where(startingExpression.and(expression))
+            .where(expression)
             .orderBy(*orderings)
 
         val token = query.addChangeListener { change ->
@@ -621,7 +618,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     inline fun <reified T>live(buildQuery: AdvancedQuery.() -> Unit, crossinline closure: (List<T>) -> Unit): LiveQuery {
         val collection = collection<T>()
-        val startingExpression = Expression.all()
+        val startExpression = Expression.booleanValue(true)
 
         val advancedQuery = AdvancedQuery()
         advancedQuery.buildQuery()
@@ -629,9 +626,9 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
             .from(DataSource.collection(collection))
 
         query = if (advancedQuery.expression != null) {
-            (query as From).where(startingExpression.and(advancedQuery.expression!!))
+            (query as From).where(startExpression.and(advancedQuery.expression!!))
         } else {
-            (query as From).where(startingExpression)
+            (query as From).where(startExpression)
         }
 
         if (advancedQuery.orderings != null) {

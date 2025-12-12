@@ -8,6 +8,7 @@ import com.couchbase.lite.*
 import com.dariopellegrini.storagedone.*
 import com.dariopellegrini.storagedone.query.*
 import com.dariopellegrini.storagedone.sorting.ascending
+import com.dariopellegrini.storagedone.sorting.descending
 import java.util.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
@@ -60,12 +61,29 @@ class MainActivity : AppCompatActivity() {
 //
 //            val teacher1 = Teacher("a1", "Silvia", "B", 30, "https://cv.com/silviab")
 //            database.suspending.upsert(teacher1)
+
+            val tsAll = database.suspending.get<Teacher>()
+
+            println(tsAll)
+
+            val ts = database.get<Teacher> {
+                expression = "name".equal("Silviaa")
+                orderings = arrayOf("id".descending)
+            }
+
+            println(ts)
 //
             val job = CoroutineScope(Dispatchers.IO).launch {
-                database.suspending.live<Shoed<Teacher>>().onEach {
+                database.suspending.live<Teacher>("name".equal("Silviaa")).onEach {
                     Log.i("Flow", "${it}")
                 }.launchIn(this)
             }
+
+//            val job1 = CoroutineScope(Dispatchers.IO).launch {
+//                database.suspending.live<Teacher>().onEach {
+//                    Log.i("Flow1", "${it}")
+//                }.launchIn(this)
+//            }
 
             delay(1000L)
             val teacher2 = Teacher("a2", "Silviaa", "B", 30, "https://cv.com/silviab")
@@ -88,7 +106,7 @@ class MainActivity : AppCompatActivity() {
 
             findViewById<Button>(R.id.addButton2).setOnClickListener {
                 val teacher2 = Teacher("a${(0..1000).random()}", "Silviaa", "B", 30, "https://cv.com/silviab")
-                database.insertOrUpdate(Shoed(teacher2.id, teacher))
+                database.insertOrUpdate(teacher2)
             }
 //
 //            val teachers = database.suspending.get<Teacher>()
