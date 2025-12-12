@@ -96,10 +96,10 @@ infix fun String.regex(value: String): Expression {
 }
 
 val String.isNull: Expression
-    get() = Expression.property(this).isNullOrMissing
+    get() = Expression.property(this).isNotValued
 
 val String.isNotNull: Expression
-    get() = Expression.property(this).notNullOrMissing()
+    get() = Expression.property(this).isValued
 
 infix fun String.between(pair: Pair<Number, Number>): Expression {
     return Expression.property(this).between(Expression.value(pair.first), Expression.value(pair.second))
@@ -172,10 +172,10 @@ infix fun <T: Any> KProperty<T>.regex(value: String): Expression {
 }
 
 val <T: Any> KProperty<T?>.isNull: Expression
-    get() = Expression.property(this.name).isNullOrMissing
+    get() = Expression.property(this.name).isNotValued
 
 val <T: Any> KProperty<T?>.isNotNull: Expression
-    get() = Expression.property(this.name).notNullOrMissing()
+    get() = Expression.property(this.name).isValued
 
 infix fun <T: Number> KProperty<T>.between(pair: Pair<T, T>): Expression {
     return Expression.property(this.name).between(Expression.value(pair.first), Expression.value(pair.second))

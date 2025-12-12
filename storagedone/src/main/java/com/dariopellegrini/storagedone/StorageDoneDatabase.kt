@@ -24,8 +24,6 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     companion object {
         fun configure(context: Context) {
             CouchbaseLite.init(context)
-            Database.log.file.config = LogFileConfiguration(context.cacheDir.toString())
-            Database.log.file.level = LogLevel.ERROR
         }
     }
 
@@ -492,21 +490,21 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         }
     }
 
-    fun purgeDeletedDocuments() {
-        val query = QueryBuilder.select(SelectResult.expression(Meta.id))
-            .from(DataSource.database(database))
-            .where(Meta.deleted)
-
-        database.inBatch<Exception> {
-            query.execute().map {
-                    result ->
-                val id = result.getString(0)
-                if (id != null) {
-                    database.purge(id)
-                }
-            }
-        }
-    }
+//    fun purgeDeletedDocuments() {
+//        val query = QueryBuilder.select(SelectResult.expression(Meta.id))
+//            .from(DataSource.database(database))
+//            .where(Meta.deleted)
+//
+//        database.inBatch<Exception> {
+//            query.execute().map {
+//                    result ->
+//                val id = result.getString(0)
+//                if (id != null) {
+//                    database.purge(id)
+//                }
+//            }
+//        }
+//    }
 
     // Live
     inline fun <reified T>live(crossinline closure: (List<T>) -> Unit): LiveQuery {
@@ -839,6 +837,6 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     }
 
     inline fun <reified T>getTypeName(): String {
-        return typeOf<T>().simpleName.replace("<", "generics").replace(">", "")
+        return typeOf<T>().simpleName.replace("<", "generics").replace(">", "").replace("Series", "CollectionSeries")
     }
 }
