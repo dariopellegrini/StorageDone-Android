@@ -614,6 +614,7 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
         }
         query.execute()
         return LiveQuery(query, token)
+
     }
 
     inline fun <reified T>live(buildQuery: AdvancedQuery.() -> Unit, crossinline closure: (List<T>) -> Unit): LiveQuery {
@@ -834,6 +835,6 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
     }
 
     inline fun <reified T>getTypeName(): String {
-        return typeOf<T>().simpleName.replace("<", "generics").replace(">", "").replace("Series", "CollectionSeries")
+        return typeOf<T>().simpleName.replace("<", "_").replace(">", "_")
     }
 }
