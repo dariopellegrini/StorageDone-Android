@@ -506,8 +506,8 @@ open class StorageDoneDatabase(val name: String = "StorageDone") {
 
     // Live
     inline fun <reified T>live(crossinline closure: (List<T>) -> Unit): LiveQuery {
-
-        val query = QueryBuilder.select(SelectResult.all()).from(DataSource.collection(collection<T>()))
+        val collection = collection<T>()
+        val query = QueryBuilder.select(SelectResult.all()).from(DataSource.collection(collection))
 
         val token = query.addChangeListener { change ->
 
